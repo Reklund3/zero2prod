@@ -6,7 +6,6 @@ use zero2prod::startup::run;
 pub async fn main() -> std::io::Result<()> {
     let configuration = get_configuration().expect("Failed to read configuration file.");
     let address = format!("127.0.0.1:{}", configuration.application_port);
-    let listener =
-        TcpListener::bind(address).expect("Failed to bind the server address and port");
+    let listener = TcpListener::bind(address).expect("Failed to bind the server address and port");
     run(listener)?.await
 }

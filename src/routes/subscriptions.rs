@@ -1,11 +1,11 @@
-use actix_web::{HttpResponse, post};
 use actix_web::web::Form;
+use actix_web::{post, HttpResponse};
 use serde::Deserialize;
 
 #[derive(Deserialize)]
 struct FormData {
     email: String,
-    name: String
+    name: String,
 }
 
 #[post("/subscriptions")]
