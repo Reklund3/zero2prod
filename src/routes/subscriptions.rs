@@ -1,12 +1,10 @@
-use std::ops::Deref;
 use actix_web::web;
 use actix_web::web::Form;
 use actix_web::{post, HttpResponse};
-use chrono::format::Item::Error;
+use chrono::Utc;
 use serde::Deserialize;
 use sqlx::PgPool;
 use uuid::Uuid;
-use chrono::Utc;
 
 #[derive(Deserialize)]
 struct FormData {
@@ -26,8 +24,9 @@ async fn subscribe(form: Form<FormData>, pool: web::Data<PgPool>) -> HttpRespons
         form.name,
         Utc::now()
     )
-        .execute(pool.get_ref())
-        .await {
+    .execute(pool.get_ref())
+    .await
+    {
         Ok(_) => HttpResponse::Ok().finish(),
         Err(e) => {
             println!("Failed to execute query: {}", e);

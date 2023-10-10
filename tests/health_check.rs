@@ -6,7 +6,7 @@ use zero2prod::configuration::get_configuration;
 pub struct TestApp {
     pub handle: JoinHandle<std::io::Result<()>>,
     pub address: String,
-    pub pg_pool: PgPool
+    pub pg_pool: PgPool,
 }
 
 async fn spawn_app() -> TestApp {
@@ -17,7 +17,8 @@ async fn spawn_app() -> TestApp {
         .await
         .expect("Failed to connect to Postgres.");
     let port = listener.local_addr().unwrap().port();
-    let server = zero2prod::startup::run(listener, pg_pool.clone()).expect("failed to start the test server");
+    let server = zero2prod::startup::run(listener, pg_pool.clone())
+        .expect("failed to start the test server");
     let handle = tokio::spawn(server);
 
     TestApp {
