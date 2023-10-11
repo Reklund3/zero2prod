@@ -16,9 +16,12 @@ path = "src/main.rs"
 actix-web = "4"
 chrono = { version = "0.4", default-features = false, features = ["clock"]}
 config = "0.13"
+env_logger = "0.10"
+log = "0.4.20"
 reqwest = "0.11.21"
 serde = { version = "1.0.188", features = ["derive"] }
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
+tracing = { version = "0.1", features = ["log"] }
 uuid = {version = "1.4", features = ["v4"]}
 
 [dependencies.sqlx]

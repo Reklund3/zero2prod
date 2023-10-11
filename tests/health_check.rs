@@ -1,7 +1,8 @@
-use sqlx::{Connection, PgPool};
+use sqlx::{Connection, Executor, PgConnection, PgPool};
 use std::net::TcpListener;
 use tokio::task::JoinHandle;
-use zero2prod::configuration::get_configuration;
+use uuid::Uuid;
+use zero2prod::configuration::{get_configuration, DatabaseSettings};
 
 pub struct TestApp {
     pub handle: JoinHandle<std::io::Result<()>>,
@@ -11,11 +12,9 @@ pub struct TestApp {
 
 async fn spawn_app() -> TestApp {
     let listener = TcpListener::bind("127.0.0.1:0").expect("failed to bind port for test.");
-    let configuration = get_configuration().expect("Failed to read configuration file");
-    let connection_string = configuration.database.connection_string();
-    let pg_pool = PgPool::connect(connection_string.as_str())
-        .await
-        .expect("Failed to connect to Postgres.");
+    let mut configuration = get_configuration().expect("Failed to read configuration file");
+    configuration.database.database_name = Uuid::new_v4().to_string();
+    let pg_pool = configure_database(&configuration.database).await;
     let port = listener.local_addr().unwrap().port();
     let server = zero2prod::startup::run(listener, pg_pool.clone())
         .expect("failed to start the test server");
@@ -26,6 +25,26 @@ async fn spawn_app() -> TestApp {
         address: format!("http://127.0.0.1:{}", port),
         pg_pool: pg_pool,
     }
+}
+
+pub async fn configure_database(config: &DatabaseSettings) -> PgPool {
+    let mut connection = PgConnection::connect(&config.connection_string_without_db())
+        .await
+        .expect("Failed to connect to Postgres");
+    connection
+        .execute(format!(r#"CREATE DATABASE "{}";"#, config.database_name).as_str())
+        .await
+        .expect("Failed to create database.");
+
+    let pg_pool = PgPool::connect(&config.connection_string().as_str())
+        .await
+        .expect("Failed to connect to Postgres.");
+    sqlx::migrate!("./migrations")
+        .run(&pg_pool)
+        .await
+        .expect("Failed to migrate the database.");
+
+    pg_pool
 }
 
 #[tokio::test]
