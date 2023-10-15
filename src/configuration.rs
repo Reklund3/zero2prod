@@ -2,7 +2,6 @@ use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
 use sqlx::postgres::PgConnectOptions;
-use tracing_subscriber::fmt::format;
 
 #[derive(Deserialize)]
 pub struct Settings {
