@@ -7,7 +7,7 @@ use tracing_subscriber::fmt::format;
 #[derive(Deserialize)]
 pub struct Settings {
     pub database: DatabaseSettings,
-    pub application_settings: ApplicationSettings,
+    pub application: ApplicationSettings,
 }
 
 #[derive(Deserialize)]
@@ -63,8 +63,7 @@ impl TryFrom<String> for Environment {
             "local" => Ok(Self::Local),
             "production" => Ok(Self::Production),
             other => Err(format!(
-                "{} is not a supported environment. \
-                Use either `local` opr `production`.",
+                "{} is not a supported environment. Use either `local` or `production`.",
                 other
             )),
         }
@@ -72,13 +71,15 @@ impl TryFrom<String> for Environment {
 }
 
 pub fn get_configuration() -> Result<Settings, config::ConfigError> {
-    let base_path = std::env::current_dir().expect("Failed to determin the current directory!");
+    let base_path = std::env::current_dir().expect("Failed to determine the current directory!");
     let configuration_directory = base_path.join("configuration");
 
+    // Detect the running environment.
+    // Default to `local` if unspecified.
     let environment: Environment = std::env::var("APP_ENVIRONMENT")
         .unwrap_or_else(|_| "local".into())
         .try_into()
-        .expect("Failed to parse the APP_ENVIRONMENT!");
+        .expect("Failed to parse APP_ENVIRONMENT!");
     let environment_filename = format!("{}.yaml", environment.as_str());
     let settings = config::Config::builder()
         .add_source(config::File::from(
@@ -87,6 +88,8 @@ pub fn get_configuration() -> Result<Settings, config::ConfigError> {
         .add_source(config::File::from(
             configuration_directory.join(environment_filename),
         ))
+        // Add in settings from environment variables (with a prefix of APP and '__' as separator)
+        // E.g. `APP_APPLICATION__PORT=5001 would set `Settings.application.port`
         .add_source(
             config::Environment::with_prefix("APP")
                 .prefix_separator("_")
