@@ -30,9 +30,9 @@ pub struct DatabaseSettings {
 
 impl DatabaseSettings {
     pub fn with_db(&self) -> PgConnectOptions {
-        let options = self.without_db().database(&self.database_name);
-        options.log_statements(tracing_log::log::LevelFilter::Trace);
-        options
+        self.without_db()
+            .database(&self.database_name)
+            .log_statements(log::LevelFilter::Trace)
     }
 
     pub fn without_db(&self) -> PgConnectOptions {
