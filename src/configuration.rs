@@ -1,3 +1,5 @@
+use crate::domain::SubscriberEmail;
+use crate::email_client::BaseUrl;
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
 use serde_aux::field_attributes::deserialize_number_from_string;
@@ -8,13 +10,7 @@ use sqlx::ConnectOptions;
 pub struct Settings {
     pub database: DatabaseSettings,
     pub application: ApplicationSettings,
-}
-
-#[derive(Deserialize)]
-pub struct ApplicationSettings {
-    #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub port: u16,
-    pub host: String,
+    pub email_client: EmailClientSettings,
 }
 
 #[derive(Deserialize)]
@@ -47,6 +43,25 @@ impl DatabaseSettings {
             .password(self.password.expose_secret())
             .port(self.port)
             .ssl_mode(ssl_mode)
+    }
+}
+
+#[derive(Deserialize)]
+pub struct ApplicationSettings {
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub port: u16,
+    pub host: String,
+}
+
+#[derive(Deserialize)]
+pub struct EmailClientSettings {
+    pub base_url: BaseUrl,
+    pub sender_email: String,
+}
+
+impl EmailClientSettings {
+    pub fn sender(&self) -> Result<SubscriberEmail, String> {
+        SubscriberEmail::parse(self.sender_email.clone())
     }
 }
 

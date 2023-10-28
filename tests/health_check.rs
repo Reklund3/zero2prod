@@ -33,6 +33,7 @@ async fn spawn_app() -> TestApp {
     let mut configuration = get_configuration().expect("Failed to read configuration file");
     configuration.database.database_name = Uuid::new_v4().to_string();
     let pg_pool = configure_database(&configuration.database).await;
+
     let port = listener.local_addr().unwrap().port();
     let server = zero2prod::startup::run(listener, pg_pool.clone())
         .expect("failed to start the test server");
