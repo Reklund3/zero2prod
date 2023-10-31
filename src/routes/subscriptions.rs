@@ -43,7 +43,7 @@ fn error_chain_fmt(
     e: &impl std::error::Error,
     f: &mut std::fmt::Formatter<'_>,
 ) -> std::fmt::Result {
-    writeln!(f, "{}\n", e);
+    writeln!(f, "{}\n", e)?;
     let mut current = e.source();
     while let Some(cause) = current {
         writeln!(f, "Caused by:\n\t{}", cause)?;
@@ -53,6 +53,12 @@ fn error_chain_fmt(
 }
 
 pub struct StoreTokenError(sqlx::Error);
+
+impl std::error::Error for StoreTokenError {
+    fn source(&self) -> Option<&(dyn std::error::Error + 'static)> {
+        Some(&self.0)
+    }
+}
 
 impl Debug for StoreTokenError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
@@ -68,8 +74,6 @@ impl Display for StoreTokenError {
         )
     }
 }
-
-impl std::error::Error for StoreTokenError {}
 
 #[derive(thiserror::Error)]
 pub enum SubscribeError {
@@ -201,7 +205,7 @@ async fn insert_subscriber(
 }
 
 #[tracing::instrument(
-    name = "Storing subscription token in the database.",
+    name = "Store subscription token in the database.",
     skip(subscription_token, transaction)
 )]
 async fn store_token(
