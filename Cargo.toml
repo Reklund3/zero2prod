@@ -13,6 +13,7 @@ name = "zero2prod"
 path = "src/main.rs"
 
 [dependencies]
+anyhow = "1"
 actix-web = "4"
 chrono = { version = "0.4", default-features = false, features = ["clock"]}
 config = "0.13"
@@ -22,6 +23,7 @@ reqwest = { version = "0.11", features = ["json"] }
 secrecy = {  version = "0.8", features = ["serde"] }
 serde = { version = "1.0.188", features = ["derive"] }
 serde-aux = "4.2"
+thiserror = "1"
 tokio = { version = "1.29.1", features = ["macros", "rt-multi-thread"] }
 tracing = { version = "0.1", features = ["log"] }
 tracing-actix-web = "0.7"
