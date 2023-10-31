@@ -1,12 +1,11 @@
-use std::fmt::{Debug, Display, Formatter};
+use crate::routes::StoreTokenError;
+use actix_web::http::StatusCode;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, ResponseError};
-use actix_web::http::StatusCode;
 use anyhow::Context;
 use sqlx::PgPool;
+use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
-use crate::routes::StoreTokenError;
-
 
 fn error_chain_fmt(
     e: &impl std::error::Error,
@@ -21,13 +20,12 @@ fn error_chain_fmt(
     Ok(())
 }
 
-
 #[derive(thiserror::Error)]
 enum ConfirmSubscriptionError {
     #[error("{0}")]
     Unauthorized(String),
     #[error(transparent)]
-    OtherError(#[from] anyhow::Error)
+    OtherError(#[from] anyhow::Error),
 }
 
 impl Debug for ConfirmSubscriptionError {
@@ -40,7 +38,7 @@ impl ResponseError for ConfirmSubscriptionError {
     fn status_code(&self) -> StatusCode {
         match self {
             ConfirmSubscriptionError::Unauthorized(_) => StatusCode::UNAUTHORIZED,
-            ConfirmSubscriptionError::OtherError(_) => StatusCode::INTERNAL_SERVER_ERROR
+            ConfirmSubscriptionError::OtherError(_) => StatusCode::INTERNAL_SERVER_ERROR,
         }
     }
 }
@@ -55,7 +53,10 @@ impl Debug for ConfirmSubscriberError {
 
 impl Display for ConfirmSubscriberError {
     fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(f, "A database error was encountered while trying to confirm the subscriber.")
+        write!(
+            f,
+            "A database error was encountered while trying to confirm the subscriber."
+        )
     }
 }
 
@@ -68,21 +69,31 @@ pub struct Parameters {
 
 #[get("/subscriptions/confirm")]
 #[tracing::instrument(name = "Confirm a pending subscriber.", skip(pool))]
-pub async fn confirm(parameters: web::Query<Parameters>, pool: Data<PgPool>) -> Result<HttpResponse, ConfirmSubscriptionError> {
-    let maybe_subscriber_id = get_subscriber_id_from_token(&parameters.subscription_token.as_str(), &pool)
-        .await
-        .context("Failed to retrieve the subscriber id from the data base.")
-        .unwrap();
+pub async fn confirm(
+    parameters: web::Query<Parameters>,
+    pool: Data<PgPool>,
+) -> Result<HttpResponse, ConfirmSubscriptionError> {
+    let maybe_subscriber_id =
+        get_subscriber_id_from_token(&parameters.subscription_token.as_str(), &pool)
+            .await
+            .context("Failed to retrieve the subscriber id from the data base.")
+            .unwrap();
 
     match maybe_subscriber_id {
         Some(id) => confirm_subscriber(id, &pool).await,
-        None => Err(ConfirmSubscriptionError::Unauthorized("Subscriber id does not exists in postgres.".into()))
-    }.context("Failed to retrieve a valid user id for the provided subscriber token.")?;
+        None => Err(ConfirmSubscriptionError::Unauthorized(
+            "Subscriber id does not exists in postgres.".into(),
+        )),
+    }
+    .context("Failed to retrieve a valid user id for the provided subscriber token.")?;
     Ok(HttpResponse::Ok().finish())
 }
 
 #[tracing::instrument(name = "Marking the subscriber as confirmed.", skip(pool))]
-async fn confirm_subscriber(subscriber_id: Uuid, pool: &PgPool) -> Result<(), ConfirmSubscriptionError> {
+async fn confirm_subscriber(
+    subscriber_id: Uuid,
+    pool: &PgPool,
+) -> Result<(), ConfirmSubscriptionError> {
     sqlx::query!(
         r#"UPDATE subscriptions SET status = 'confirmed' WHERE id = $1"#,
         subscriber_id,
