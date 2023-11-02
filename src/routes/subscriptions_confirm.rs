@@ -1,4 +1,4 @@
-use crate::routes::StoreTokenError;
+use crate::routes::error_chain_fmt;
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
 use actix_web::{get, web, HttpResponse, ResponseError};
@@ -6,19 +6,6 @@ use anyhow::Context;
 use sqlx::PgPool;
 use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
-
-fn error_chain_fmt(
-    e: &impl std::error::Error,
-    f: &mut std::fmt::Formatter<'_>,
-) -> std::fmt::Result {
-    writeln!(f, "{}\n", e);
-    let mut current = e.source();
-    while let Some(cause) = current {
-        writeln!(f, "Caused by:\n\t{}", cause)?;
-        current = cause.source();
-    }
-    Ok(())
-}
 
 #[derive(thiserror::Error)]
 enum ConfirmSubscriptionError {
@@ -69,7 +56,7 @@ pub struct Parameters {
 
 #[get("/subscriptions/confirm")]
 #[tracing::instrument(name = "Confirm a pending subscriber.", skip(pool))]
-pub async fn confirm(
+async fn confirm(
     parameters: web::Query<Parameters>,
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, ConfirmSubscriptionError> {

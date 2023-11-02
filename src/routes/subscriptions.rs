@@ -2,6 +2,7 @@ use crate::domain::NewSubscriber;
 use crate::domain::SubscriberEmail;
 use crate::domain::SubscriberName;
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
+use crate::routes::error_chain_fmt;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Form};
 use actix_web::{post, HttpResponse, ResponseError};
@@ -9,10 +10,9 @@ use anyhow::Context;
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
 use rand::{thread_rng, Rng};
-use serde::de::StdError;
 use serde::Deserialize;
 use sqlx::{Executor, PgPool, Postgres, Transaction};
-use std::fmt::{write, Debug, Display, Formatter};
+use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
@@ -37,19 +37,6 @@ fn generate_subscription_token() -> String {
         .map(char::from)
         .take(25)
         .collect()
-}
-
-fn error_chain_fmt(
-    e: &impl std::error::Error,
-    f: &mut std::fmt::Formatter<'_>,
-) -> std::fmt::Result {
-    writeln!(f, "{}\n", e)?;
-    let mut current = e.source();
-    while let Some(cause) = current {
-        writeln!(f, "Caused by:\n\t{}", cause)?;
-        current = cause.source();
-    }
-    Ok(())
 }
 
 pub struct StoreTokenError(sqlx::Error);
@@ -175,7 +162,7 @@ pub async fn send_confirmation_email(
         confirmation_link
     );
     email_client
-        .send_email(new_subscriber.email, "Welcome!", &html_body, &plain_body)
+        .send_email(&new_subscriber.email, "Welcome!", &html_body, &plain_body)
         .await
 }
 
