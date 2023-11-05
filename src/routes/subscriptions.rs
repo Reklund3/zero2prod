@@ -5,7 +5,7 @@ use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use crate::routes::error_chain_fmt;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Form};
-use actix_web::{post, HttpResponse, ResponseError};
+use actix_web::{HttpResponse, ResponseError};
 use anyhow::Context;
 use chrono::Utc;
 use rand::distributions::Alphanumeric;
@@ -16,7 +16,7 @@ use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
-struct FormData {
+pub struct FormData {
     email: String,
     name: String,
 }
@@ -95,7 +95,6 @@ impl ResponseError for SubscribeError {
     }
 }
 
-#[post("/subscriptions")]
 #[tracing::instrument(
     name = "Adding a new subscriber.",
     skip(pool, email_client, base_url),
@@ -104,7 +103,7 @@ impl ResponseError for SubscribeError {
         subscriber_name = %form.name
     )
 )]
-async fn subscribe(
+pub async fn subscribe(
     form: Form<FormData>,
     pool: Data<PgPool>,
     email_client: Data<EmailClient>,

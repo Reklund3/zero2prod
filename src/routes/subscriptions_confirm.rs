@@ -1,14 +1,14 @@
 use crate::routes::error_chain_fmt;
 use actix_web::http::StatusCode;
 use actix_web::web::Data;
-use actix_web::{get, web, HttpResponse, ResponseError};
+use actix_web::{web, HttpResponse, ResponseError};
 use anyhow::Context;
 use sqlx::PgPool;
 use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
 
 #[derive(thiserror::Error)]
-enum ConfirmSubscriptionError {
+pub enum ConfirmSubscriptionError {
     #[error("{0}")]
     Unauthorized(String),
     #[error(transparent)]
@@ -54,9 +54,8 @@ pub struct Parameters {
     subscription_token: String,
 }
 
-#[get("/subscriptions/confirm")]
 #[tracing::instrument(name = "Confirm a pending subscriber.", skip(pool))]
-async fn confirm(
+pub async fn confirm(
     parameters: web::Query<Parameters>,
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, ConfirmSubscriptionError> {

@@ -4,7 +4,7 @@ use crate::email_client::EmailClient;
 use crate::routes::error_chain_fmt;
 use actix_web::http::header::{HeaderMap, HeaderValue};
 use actix_web::http::{header, StatusCode};
-use actix_web::{post, web, HttpRequest, HttpResponse, ResponseError};
+use actix_web::{web, HttpRequest, HttpResponse, ResponseError};
 use anyhow::Context;
 use base64::Engine;
 use secrecy::Secret;
@@ -90,13 +90,12 @@ fn basic_authentication(headers: &HeaderMap) -> Result<Credentials, anyhow::Erro
     })
 }
 
-#[post("/newsletters")]
 #[tracing::instrument(
     name = "Sending news email to subscribed users.",
     skip(body, email_client, pool, request),
     fields(username=tracing::field::Empty, user_id=tracing::field::Empty)
 )]
-async fn publish_newsletter(
+pub async fn publish_newsletter(
     body: web::Json<BodyData>,
     email_client: web::Data<EmailClient>,
     pool: web::Data<PgPool>,
