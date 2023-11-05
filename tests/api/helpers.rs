@@ -1,3 +1,5 @@
+use argon2::password_hash::SaltString;
+use argon2::{Algorithm, Argon2, Params, PasswordHasher, Version};
 use once_cell::sync::Lazy;
 use sqlx::{Connection, Executor, PgConnection, PgPool};
 use tokio::task::JoinHandle;
@@ -27,12 +29,52 @@ pub struct ConfirmationLinks {
     pub plain_text: reqwest::Url,
 }
 
+pub struct TestUser {
+    pub user_id: Uuid,
+    pub username: String,
+    pub password: String,
+}
+impl TestUser {
+    pub fn generate() -> Self {
+        Self {
+            user_id: Uuid::new_v4(),
+            username: Uuid::new_v4().to_string(),
+            password: Uuid::new_v4().to_string(),
+        }
+    }
+
+    async fn store(&self, pool: &PgPool) {
+        let salt = SaltString::generate(&mut rand::thread_rng());
+        let password_hash = Argon2::new(
+            Algorithm::Argon2id,
+            Version::V0x13,
+            Params::new(15000, 2, 1, None).unwrap(),
+        )
+        .hash_password(self.password.as_bytes(), &salt)
+        .unwrap()
+        .to_string();
+        sqlx::query!(
+            r#"
+        INSERT INTO users (user_id, username, password_hash)
+        VALUES ($1, $2, $3)
+        "#,
+            self.user_id,
+            self.username,
+            password_hash,
+        )
+        .execute(pool)
+        .await
+        .expect("Failed to create test users.");
+    }
+}
+
 pub struct TestApp {
     pub handle: JoinHandle<std::io::Result<()>>,
     pub address: String,
     pub port: u16,
     pub email_server: MockServer,
     pub pg_pool: PgPool,
+    pub test_user: TestUser,
 }
 impl TestApp {
     pub async fn post_subscriptions(&self, body: String) -> reqwest::Response {
@@ -70,6 +112,16 @@ impl TestApp {
     pub async fn post_newsletters(&self, body: serde_json::Value) -> reqwest::Response {
         reqwest::Client::new()
             .post(&format!("{}/newsletters", &self.address))
+            .basic_auth(&self.test_user.username, Some(&self.test_user.password))
+            .json(&body)
+            .send()
+            .await
+            .expect("Failed to execute request.")
+    }
+
+    pub async fn post_newsletters_no_auth(&self, body: serde_json::Value) -> reqwest::Response {
+        reqwest::Client::new()
+            .post(&format!("{}/newsletters", &self.address))
             .json(&body)
             .send()
             .await
@@ -98,13 +150,16 @@ pub async fn spawn_app() -> TestApp {
     let address = format!("http://127.0.0.1:{}", application_port);
     let handle = tokio::spawn(application.run_until_stopped());
 
-    TestApp {
+    let test_app = TestApp {
         handle,
         address,
         port: application_port,
         email_server,
         pg_pool: get_pg_pool(&configuration.database),
-    }
+        test_user: TestUser::generate(),
+    };
+    test_app.test_user.store(&test_app.pg_pool).await;
+    test_app
 }
 
 async fn configure_database(config: &DatabaseSettings) -> PgPool {

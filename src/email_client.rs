@@ -165,7 +165,7 @@ mod tests {
         let content: String = content();
         let _ = email_client
             .send_email(
-                subcriber_email,
+                &subcriber_email,
                 subject().as_str(),
                 content.as_str(),
                 content.as_str(),
@@ -191,7 +191,7 @@ mod tests {
         let content: String = content();
         let outcome = email_client
             .send_email(
-                subcriber_email,
+                &subcriber_email,
                 subject().as_str(),
                 content.as_str(),
                 content.as_str(),
@@ -219,7 +219,7 @@ mod tests {
         let content: String = content();
         let outcome = email_client
             .send_email(
-                subcriber_email,
+                &subcriber_email,
                 subject().as_str(),
                 content.as_str(),
                 content.as_str(),
@@ -248,7 +248,7 @@ mod tests {
         let content: String = content();
         let outcome = email_client
             .send_email(
-                subcriber_email,
+                &subcriber_email,
                 subject().as_str(),
                 content.as_str(),
                 content.as_str(),
