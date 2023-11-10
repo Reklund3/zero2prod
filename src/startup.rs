@@ -86,9 +86,9 @@ async fn run(
     hmac_secret: Secret<String>,
     redis_uri: Secret<String>,
 ) -> Result<Server, anyhow::Error> {
-    let db_pool = web::Data::new(pg_pool);
-    let email_client = web::Data::new(email_client);
-    let base_url = web::Data::new(base_url);
+    let db_pool = Data::new(pg_pool);
+    let email_client = Data::new(email_client);
+    let base_url = Data::new(base_url);
     let message_store =
         CookieMessageStore::builder(Key::from(hmac_secret.expose_secret().as_bytes())).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
@@ -107,6 +107,8 @@ async fn run(
                 web::scope("/admin")
                     .wrap(from_fn(reject_anonymous_users))
                     .route("/dashboard", web::get().to(admin_dashboard))
+                    .route("/newsletters", web::get().to(publish_newsletter_form))
+                    .route("/newsletters", web::post().to(publish_newsletter))
                     .route("/password", web::get().to(change_password_form))
                     .route("/password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out)),
@@ -116,7 +118,6 @@ async fn run(
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))
             .route("/subscriptions/confirm", web::get().to(confirm))
-            .route("/newsletters", web::post().to(publish_newsletter))
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
             .app_data(base_url.clone())

@@ -58,6 +58,7 @@ impl EmailClient {
             authorization_token,
         }
     }
+
     pub async fn send_email(
         &self,
         recipient: &SubscriberEmail,
@@ -160,16 +161,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let subcriber_email = SubscriberEmail::parse(SafeEmail().fake()).unwrap();
-
-        let content: String = content();
         let _ = email_client
-            .send_email(
-                &subcriber_email,
-                subject().as_str(),
-                content.as_str(),
-                content.as_str(),
-            )
+            .send_email(&email(), &subject(), &content(), &content())
             .await;
     }
 
@@ -186,16 +179,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let subcriber_email = SubscriberEmail::parse(SafeEmail().fake()).unwrap();
-
-        let content: String = content();
         let outcome = email_client
-            .send_email(
-                &subcriber_email,
-                subject().as_str(),
-                content.as_str(),
-                content.as_str(),
-            )
+            .send_email(&email(), &subject(), &content(), &content())
             .await;
 
         assert_ok!(outcome);
@@ -214,16 +199,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let subcriber_email = SubscriberEmail::parse(SafeEmail().fake()).unwrap();
-
-        let content: String = content();
         let outcome = email_client
-            .send_email(
-                &subcriber_email,
-                subject().as_str(),
-                content.as_str(),
-                content.as_str(),
-            )
+            .send_email(&email(), &subject(), &content(), &content())
             .await;
 
         assert_err!(outcome);
@@ -243,16 +220,8 @@ mod tests {
             .mount(&mock_server)
             .await;
 
-        let subcriber_email = SubscriberEmail::parse(SafeEmail().fake()).unwrap();
-
-        let content: String = content();
         let outcome = email_client
-            .send_email(
-                &subcriber_email,
-                subject().as_str(),
-                content.as_str(),
-                content.as_str(),
-            )
+            .send_email(&email(), &subject(), &content(), &content())
             .await;
 
         assert_err!(outcome);

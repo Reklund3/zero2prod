@@ -32,16 +32,11 @@ async fn new_password_fields_must_match() {
     let new_password = Uuid::new_v4().to_string();
     let another_new_password = Uuid::new_v4().to_string();
 
-    test_app
-        .post_login(&serde_json::json!({
-            "username": &app.test_user.username,
-            "password": &app.test_user.password
-        }))
-        .await;
+    test_app.test_user.login(&test_app).await;
 
     let response = test_app
         .post_change_password(&serde_json::json!({
-            "current_password": &app.test_user.password,
+            "current_password": &test_app.test_user.password,
             "new_password": &new_password,
             "new_password_check": &another_new_password,
         }))
@@ -61,12 +56,7 @@ async fn current_password_must_be_valid() {
     let new_password = Uuid::new_v4().to_string();
     let wrong_password = Uuid::new_v4().to_string();
 
-    test_app
-        .post_login(&serde_json::json!({
-            "username": &app.test_user.username,
-            "password": &app.test_user.password
-        }))
-        .await;
+    test_app.test_user.login(&test_app).await;
 
     let response = test_app
         .post_change_password(&serde_json::json!({
@@ -88,15 +78,15 @@ async fn changing_password_works() {
     let new_password = Uuid::new_v4().to_string();
 
     let login_body = serde_json::json!({
-        "username": &app.test_user.username,
-        "password": &app.test_user.password
+        "username": &test_app.test_user.username,
+        "password": &test_app.test_user.password
     });
     let response = test_app.post_login(&login_body).await;
     assert_is_redirect_to(&response, "/admin/dashboard");
 
     let response = test_app
         .post_change_password(&serde_json::json!({
-            "current_password": &app.test_user.password,
+            "current_password": &test_app.test_user.password,
             "new_password": &new_password,
             "new_password_check": &new_password,
         }))
@@ -110,10 +100,10 @@ async fn changing_password_works() {
     assert_is_redirect_to(&response, "/login");
 
     let html_page = test_app.get_login_html().await;
-    assert!(html_page.contains("<p><i>You have successfully logged out.</i></p>"));
+    assert!(html_page.contains(r#"<p><i>You have successfully logged out.</i></p>"#));
 
     let login_body = serde_json::json!({
-        "username": &app.test_user.username,
+        "username": &test_app.test_user.username,
         "password": &new_password
     });
     let response = test_app.post_login(&login_body).await;
