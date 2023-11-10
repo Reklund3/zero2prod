@@ -208,6 +208,6 @@ async fn store_token(
             subscriber_id
         ))
         .await
-        .map_err(|e| StoreTokenError(e))?;
+        .map_err(StoreTokenError)?;
     Ok(())
 }

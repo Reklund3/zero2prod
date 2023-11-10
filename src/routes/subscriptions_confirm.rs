@@ -60,7 +60,7 @@ pub async fn confirm(
     pool: Data<PgPool>,
 ) -> Result<HttpResponse, ConfirmSubscriptionError> {
     let maybe_subscriber_id =
-        get_subscriber_id_from_token(&parameters.subscription_token.as_str(), &pool)
+        get_subscriber_id_from_token(parameters.subscription_token.as_str(), &pool)
             .await
             .context("Failed to retrieve the subscriber id from the data base.")
             .unwrap();
