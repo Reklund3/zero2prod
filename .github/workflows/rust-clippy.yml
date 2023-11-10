@@ -16,6 +16,11 @@ on:
     # The branches below must be a subset of the branches above
     branches: [ "main" ]
 
+env:
+  CARGO_TERM_COLOR: always
+  SQLX_VERSION: 0.7.1
+  SQLX_FEATURES: "rustls,postgres"
+
 jobs:
   rust-clippy-analyze:
     name: Run rust-clippy analyzing
