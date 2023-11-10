@@ -86,7 +86,6 @@ async fn confirm_subscriber(
     )
     .execute(pool)
     .await
-    .map_err(|e| e)
     .context("Failed to update the user record to confirmed.")?;
     Ok(())
 }
@@ -108,7 +107,6 @@ async fn get_subscriber_id_from_token(
     )
     .fetch_optional(pool)
     .await
-    .map_err(|e| e)
     .context("Failed to get the subscriber id from postgres.")?;
     Ok(result.map(|r| r.subscriber_id))
 }

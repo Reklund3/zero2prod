@@ -161,7 +161,7 @@ pub async fn send_confirmation_email(
         confirmation_link
     );
     email_client
-        .send_email(&new_subscriber.email, "Welcome!", &html_body, &plain_body)
+        .send_email(&new_subscriber.email, "Welcome!", html_body, plain_body)
         .await
 }
 
@@ -185,8 +185,7 @@ async fn insert_subscriber(
             new_subscriber.name.as_ref(),
             Utc::now()
         ))
-        .await
-        .map_err(|e| e)?;
+        .await?;
     Ok(subscriber_id)
 }
 
