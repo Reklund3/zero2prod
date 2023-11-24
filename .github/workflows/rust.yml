@@ -140,8 +140,8 @@ jobs:
         id: meta
         uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
         with:
-          images: |
 #            my-docker-hub-namespace/my-docker-hub-repository
+          images: |
             reklund3/zero2prod
             ghcr.io/${{ github.repository }}
 
