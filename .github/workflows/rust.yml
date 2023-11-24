@@ -10,6 +10,7 @@ on:
 
 env:
   CARGO_TERM_COLOR: always
+  REGISTRY: ghcr.io
   SQLX_VERSION: 0.7.1
   SQLX_FEATURES: "rustls,postgres"
 
@@ -132,7 +133,7 @@ jobs:
       - name: Log in to the Container registry
         uses: docker/login-action@65b78e6e13532edd9afa3aa52ac7964289d1a9c1
         with:
-          registry: ghcr.io
+          registry: ${{ env.REGISTRY }}
           username: ${{ github.actor }}
           password: ${{ secrets.GITHUB_TOKEN }}
 
@@ -142,8 +143,7 @@ jobs:
         with:
 #            my-docker-hub-namespace/my-docker-hub-repository
           images: |
-            reklund3/zero2prod
-            ghcr.io/${{ github.repository }}
+            ${{ env.REGISTRY }}/${{ github.repository }}
 
       - name: Build and push Docker images
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
