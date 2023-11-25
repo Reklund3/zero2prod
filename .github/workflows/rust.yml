@@ -1,6 +1,9 @@
 name: Rust
 
 on:
+  release:
+    branches: [ 'main' ]
+    types: [ created ]
   push:
     branches:
       - "main"
