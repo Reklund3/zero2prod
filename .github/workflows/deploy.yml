@@ -1,10 +1,11 @@
 name: Deploy
 
 on:
-  workflow_call:
+  push:
     branches:
       - "main"
       - 'releases/**'
+  workflow_call:
     inputs:
       config-path:
         required: true
