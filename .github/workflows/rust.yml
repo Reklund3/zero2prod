@@ -113,7 +113,7 @@ jobs:
   # You can also reference a tag or branch, but the action may change without warning.
   push_to_registries:
     name: Push Docker image to github registries
-    if: $ {{ startsWith(github.ref, 'refs/tags/v') }}
+    if: startsWith(github.ref, 'refs/tags/v')
     needs: [ test ]
     uses: ./.github/workflows/deploy.yml
 #    permissions:
