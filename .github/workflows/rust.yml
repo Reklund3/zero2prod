@@ -120,7 +120,7 @@ jobs:
     if: startsWith(github.ref, 'refs/tags/v')
     runs-on: ubuntu-latest
     needs: [ fmt, test ]
-# Reinstitue when I figure out the condition for tags
+# Reinstitute when I figure out the condition for tags
 #    uses: ./.github/workflows/deploy.yml
     permissions:
       packages: write
