@@ -3,6 +3,7 @@ use crate::domain::SubscriberEmail;
 use crate::domain::SubscriberName;
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use crate::routes::error_chain_fmt;
+use actix_web;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Form};
 use actix_web::{HttpResponse, ResponseError};

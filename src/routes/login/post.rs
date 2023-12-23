@@ -2,6 +2,7 @@ use crate::authentication::{validate_credentials, AuthError, Credentials};
 use crate::routes::error_chain_fmt;
 use crate::session_state::TypedSession;
 use crate::utils::see_other;
+use actix_web;
 use actix_web::error::InternalError;
 use actix_web::{web, HttpResponse};
 use actix_web_flash_messages::FlashMessage;
