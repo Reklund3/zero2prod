@@ -1,5 +1,6 @@
 use crate::session_state::TypedSession;
 use crate::utils::e500;
+use actix_session::SessionGetError;
 use actix_web::http::header::LOCATION;
 use actix_web::{http::header::ContentType, web, HttpResponse};
 use anyhow::Context;
@@ -10,6 +11,14 @@ pub async fn admin_dashboard(
     session: TypedSession,
     pool: web::Data<PgPool>,
 ) -> Result<HttpResponse, actix_web::Error> {
+    match session.get_user_id() {
+        Ok(id) => {
+            println!("got a users id {:?}", id);
+        }
+        Err(e) => {
+            println!("got the following get session error {:?}", e);
+        }
+    }
     let username = if let Some(user_id) = session.get_user_id().map_err(e500)? {
         get_username(user_id, &pool).await.map_err(e500)?
     } else {
