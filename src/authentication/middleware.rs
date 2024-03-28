@@ -31,22 +31,11 @@ pub async fn reject_anonymous_users(
 ) -> Result<ServiceResponse<impl MessageBody>, actix_web::Error> {
     let session = {
         let (http_request, payload) = req.parts_mut();
-        println!("Got http request of {:?}", http_request);
         TypedSession::from_request(http_request, payload).await
     }?;
 
-    match session.get_user_id() {
-        Ok(id) => {
-            println!("got a users id {:?}", id);
-        }
-        Err(e) => {
-            println!("got the following get session error {}", e);
-        }
-    }
-
     match session.get_user_id().map_err(e500)? {
         Some(user_id) => {
-            println!("got the following user id {}", user_id);
             req.extensions_mut().insert(UserId(user_id));
             next.call(req).await
         }
