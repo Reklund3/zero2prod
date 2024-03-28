@@ -4,7 +4,7 @@ use actix_web::web::Data;
 use actix_web::{web, HttpResponse, ResponseError};
 use anyhow::Context;
 use sqlx::PgPool;
-use std::fmt::{Debug, Display, Formatter};
+use std::fmt::{Debug, Formatter};
 use uuid::Uuid;
 
 #[derive(thiserror::Error)]
@@ -29,25 +29,6 @@ impl ResponseError for ConfirmSubscriptionError {
         }
     }
 }
-
-pub struct ConfirmSubscriberError(sqlx::Error);
-
-impl Debug for ConfirmSubscriberError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        error_chain_fmt(self, f)
-    }
-}
-
-impl Display for ConfirmSubscriberError {
-    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
-        write!(
-            f,
-            "A database error was encountered while trying to confirm the subscriber."
-        )
-    }
-}
-
-impl std::error::Error for ConfirmSubscriberError {}
 
 #[derive(Debug, serde::Deserialize)]
 pub struct Parameters {
