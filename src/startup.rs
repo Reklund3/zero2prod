@@ -2,8 +2,10 @@ use crate::authentication::reject_anonymous_users;
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use crate::routes::*;
+use actix_session::config::PersistentSession;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
+use actix_web::cookie::time::Duration;
 use actix_web::cookie::Key;
 use actix_web::dev::Server;
 use actix_web::web::Data;
@@ -97,10 +99,18 @@ async fn run(
     let server = HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
-            .wrap(SessionMiddleware::new(
-                redis_store.clone(),
-                secret_key.clone(),
-            ))
+            .wrap(
+                SessionMiddleware::builder(redis_store.clone(), secret_key.clone())
+                    .session_lifecycle(
+                        PersistentSession::default().session_ttl(Duration::seconds(3600)),
+                    )
+                    .cookie_name("zero2prod".to_string())
+                    .cookie_secure(
+                        std::env::var("COOKIE_SECURE").unwrap_or("false".to_owned()) == "true",
+                    )
+                    .cookie_path("/".to_string())
+                    .build(),
+            )
             .wrap(TracingLogger::default())
             .route("/", web::get().to(home))
             .service(
