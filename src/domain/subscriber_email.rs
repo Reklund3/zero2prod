@@ -1,12 +1,12 @@
 use std::fmt::Debug;
-use validator::validate_email;
+use validator::ValidateEmail;
 
 #[derive(Clone, Debug)]
 pub struct SubscriberEmail(String);
 
 impl SubscriberEmail {
     pub fn parse(s: String) -> Result<SubscriberEmail, String> {
-        if validate_email(&s) {
+        if ValidateEmail::validate_email(&s) {
             Ok(Self(s))
         } else {
             Err(format!("{} is not a valid subscriber email.", s))
