@@ -8,11 +8,11 @@ use actix_session::SessionMiddleware;
 use actix_web::cookie::time::Duration;
 use actix_web::cookie::Key;
 use actix_web::dev::Server;
+use actix_web::middleware::from_fn;
 use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
-use actix_web_lab::middleware::from_fn;
 use secrecy::{ExposeSecret, Secret};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Pool, Postgres};
@@ -74,11 +74,8 @@ pub fn get_pg_pool(database_configuration: &DatabaseSettings) -> PgPool {
     // Postgres pool
     PgPoolOptions::new()
         .acquire_timeout(std::time::Duration::from_secs(2))
-        .connect_lazy_with(database_configuration.with_db())
+        .connect_lazy_with(database_configuration.connect_options())
 }
-
-#[derive(Clone)]
-pub struct HmacSecret(pub Secret<String>);
 
 async fn run(
     listener: TcpListener,
@@ -90,11 +87,10 @@ async fn run(
 ) -> Result<Server, anyhow::Error> {
     let db_pool = Data::new(pg_pool);
     let email_client = Data::new(email_client);
-    let base_url = Data::new(base_url);
-    let message_store =
-        CookieMessageStore::builder(Key::from(hmac_secret.expose_secret().as_bytes())).build();
-    let message_framework = FlashMessagesFramework::builder(message_store).build();
+    let base_url = Data::new(base_url.clone());
     let secret_key = Key::from(hmac_secret.expose_secret().as_bytes());
+    let message_store = CookieMessageStore::builder(secret_key.clone()).build();
+    let message_framework = FlashMessagesFramework::builder(message_store).build();
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
     let server = HttpServer::new(move || {
         App::new()
@@ -137,3 +133,6 @@ async fn run(
     .run();
     Ok(server)
 }
+
+#[derive(Clone)]
+pub struct HmacSecret(pub Secret<String>);
