@@ -1,10 +1,21 @@
 use crate::helpers::{assert_is_redirect_to, spawn_app, ConfirmationLinks, TestApp};
+use fake::faker::internet::en::SafeEmail;
+use fake::faker::name::en::Name;
+use fake::Fake;
 use std::time::Duration;
 use wiremock::matchers::{any, method, path};
 use wiremock::{Mock, ResponseTemplate};
 
 async fn create_unconfirmed_subscriber(test_app: &TestApp) -> ConfirmationLinks {
-    let body = "name=le%20guin&email=ursula_le_guin%40gmail.com";
+    // We are working with multiple subscribers now,
+    // their details must be randomised to avoid conflicts!
+    let name: String = Name().fake();
+    let email: String = SafeEmail().fake();
+    let body = serde_urlencoded::to_string(&serde_json::json!({
+        "name": name,
+        "email": email
+    }))
+    .unwrap();
 
     let _mock_guard = Mock::given(path("/email"))
         .and(method("POST"))
@@ -29,8 +40,8 @@ async fn create_unconfirmed_subscriber(test_app: &TestApp) -> ConfirmationLinks 
 }
 
 async fn create_confirmed_subscriber(test_app: &TestApp) {
-    let confirmation_link = create_unconfirmed_subscriber(test_app).await;
-    reqwest::get(confirmation_link.html)
+    let confirmation_link = create_unconfirmed_subscriber(test_app).await.html;
+    reqwest::get(confirmation_link)
         .await
         .unwrap()
         .error_for_status()

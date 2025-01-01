@@ -15,6 +15,15 @@ pub struct Settings {
 }
 
 #[derive(Clone, Deserialize)]
+pub struct ApplicationSettings {
+    #[serde(deserialize_with = "deserialize_number_from_string")]
+    pub port: u16,
+    pub host: String,
+    pub base_url: ApplicationBaseUrl,
+    pub hmac_secret: Secret<String>,
+}
+
+#[derive(Clone, Deserialize)]
 pub struct DatabaseSettings {
     pub username: String,
     pub password: Secret<String>,
@@ -26,13 +35,7 @@ pub struct DatabaseSettings {
 }
 
 impl DatabaseSettings {
-    pub fn with_db(&self) -> PgConnectOptions {
-        self.without_db()
-            .database(&self.database_name)
-            .log_statements(log::LevelFilter::Trace)
-    }
-
-    pub fn without_db(&self) -> PgConnectOptions {
+    pub fn connect_options(&self) -> PgConnectOptions {
         let ssl_mode = if self.require_ssl {
             PgSslMode::Require
         } else {
@@ -44,16 +47,9 @@ impl DatabaseSettings {
             .password(self.password.expose_secret())
             .port(self.port)
             .ssl_mode(ssl_mode)
+            .database(&self.database_name)
+            .log_statements(log::LevelFilter::Trace)
     }
-}
-
-#[derive(Clone, Deserialize)]
-pub struct ApplicationSettings {
-    #[serde(deserialize_with = "deserialize_number_from_string")]
-    pub port: u16,
-    pub host: String,
-    pub base_url: ApplicationBaseUrl,
-    pub hmac_secret: Secret<String>,
 }
 
 #[derive(Clone, Deserialize)]
