@@ -139,6 +139,9 @@ async fn run(
             .app_data(base_url.clone())
             .app_data(Data::new(HmacSecret(hmac_secret.clone())))
     })
+        // Todo: make this a configurable. production env will/should always be https?
+        //  would allow for tests to use non cert paths
+    .listen(listener.try_clone()?)?
     .listen_rustls_0_23(listener, tls_config)?
     .run();
     Ok(server)
