@@ -21,6 +21,8 @@ pub struct ApplicationSettings {
     pub host: String,
     pub base_url: ApplicationBaseUrl,
     pub hmac_secret: Secret<String>,
+    pub cert_file_path: String,
+    pub key_file_path: String,
 }
 
 #[derive(Clone, Deserialize)]
