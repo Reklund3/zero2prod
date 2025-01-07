@@ -27,7 +27,8 @@ pub struct Application {
 }
 
 impl Application {
-    pub async fn build(configuration: Settings) -> Result<Self, anyhow::Error> {
+    //TODO: Remove the tls_enabled flag once the test specs are updated to work with tls enabled.
+    pub async fn build(configuration: Settings, tls_enabled: bool) -> Result<Self, anyhow::Error> {
         // Postgres pool
         let pg_pool: Pool<Postgres> = get_pg_pool(&configuration.database);
 
@@ -45,10 +46,14 @@ impl Application {
         );
 
         // tls config
-        let tls_config: rustls::ServerConfig = load_rustls_config(
-            configuration.application.cert_file_path.as_str(),
-            configuration.application.key_file_path.as_str(),
-        );
+        let tls_config: Option<rustls::ServerConfig> = if tls_enabled {
+            Some(load_rustls_config(
+                configuration.application.cert_file_path.as_str(),
+                configuration.application.key_file_path.as_str(),
+            ))
+        } else {
+            None
+        };
 
         let address = format!(
             "{}:{}",
@@ -93,7 +98,7 @@ async fn run(
     base_url: ApplicationBaseUrl,
     hmac_secret: Secret<String>,
     redis_uri: Secret<String>,
-    tls_config: rustls::ServerConfig,
+    tls_config: Option<rustls::ServerConfig>,
 ) -> Result<Server, anyhow::Error> {
     let db_pool = Data::new(pg_pool);
     let email_client = Data::new(email_client);
@@ -102,7 +107,7 @@ async fn run(
     let message_store = CookieMessageStore::builder(secret_key.clone()).build();
     let message_framework = FlashMessagesFramework::builder(message_store).build();
     let redis_store = RedisSessionStore::new(redis_uri.expose_secret()).await?;
-    let server = HttpServer::new(move || {
+    let server_builder = HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
             .wrap(
@@ -138,12 +143,18 @@ async fn run(
             .app_data(email_client.clone())
             .app_data(base_url.clone())
             .app_data(Data::new(HmacSecret(hmac_secret.clone())))
-    })
-    // Todo: make this a configurable. production env will/should always be https?
-    //  would allow for tests to use non cert paths
-    .listen(listener.try_clone()?)?
-    .listen_rustls_0_23(listener, tls_config)?
-    .run();
+    });
+    // Todo: maybe go back to this impl once tests can handle tls?
+    // .listen_rustls_0_23(listener, tls_config)?
+    // .run();
+
+    let server = match tls_config {
+        Some(tls) => server_builder.listen_rustls_0_23(listener, tls)?.run(),
+        None => {
+            tracing_log::log::warn!("The server has been started without tls");
+            server_builder.listen(listener)?.run()
+        }
+    };
     Ok(server)
 }
 
