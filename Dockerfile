@@ -38,7 +38,4 @@ RUN groupadd -g 1001 appuser && \
 
 USER appuser
 
-# Expose port 8080
-EXPOSE 8080
-
 ENTRYPOINT ["./zero2prod"]
