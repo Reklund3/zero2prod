@@ -13,6 +13,8 @@ use actix_web::web::Data;
 use actix_web::{web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
+use rustls::pki_types::pem::PemObject;
+use rustls::pki_types::{CertificateDer, PrivateKeyDer};
 use secrecy::{ExposeSecret, Secret};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Pool, Postgres};
@@ -42,6 +44,12 @@ impl Application {
             email_client_timeout,
         );
 
+        // tls config
+        let tls_config: rustls::ServerConfig = load_rustls_config(
+            configuration.application.cert_file_path.as_str(),
+            configuration.application.key_file_path.as_str(),
+        );
+
         let address = format!(
             "{}:{}",
             configuration.application.host, configuration.application.port
@@ -55,6 +63,7 @@ impl Application {
             configuration.application.base_url,
             configuration.application.hmac_secret,
             configuration.redis_uri,
+            tls_config,
         )
         .await?;
 
@@ -84,6 +93,7 @@ async fn run(
     base_url: ApplicationBaseUrl,
     hmac_secret: Secret<String>,
     redis_uri: Secret<String>,
+    tls_config: rustls::ServerConfig,
 ) -> Result<Server, anyhow::Error> {
     let db_pool = Data::new(pg_pool);
     let email_client = Data::new(email_client);
@@ -129,9 +139,28 @@ async fn run(
             .app_data(base_url.clone())
             .app_data(Data::new(HmacSecret(hmac_secret.clone())))
     })
-    .listen(listener)?
+    .listen_rustls_0_23(listener, tls_config)?
     .run();
     Ok(server)
+}
+
+fn load_rustls_config(cert_file_path: &str, key_file_path: &str) -> rustls::ServerConfig {
+    rustls::crypto::aws_lc_rs::default_provider()
+        .install_default()
+        .unwrap();
+
+    // init server config builder with safe defaults
+    let config = rustls::ServerConfig::builder().with_no_client_auth();
+
+    // convert files to key/cert objects
+    let cert_chain =
+        CertificateDer::from_pem_file(cert_file_path).expect("Failed to load certificate chain.");
+    let private_key =
+        PrivateKeyDer::from_pem_file(key_file_path).expect("Failed to load private key.");
+
+    config
+        .with_single_cert(vec![cert_chain], private_key)
+        .unwrap()
 }
 
 #[derive(Clone)]
