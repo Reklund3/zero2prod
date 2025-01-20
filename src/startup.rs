@@ -2,6 +2,7 @@ use crate::authentication::reject_anonymous_users;
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use crate::routes::*;
+use actix_files::Files;
 use actix_session::config::PersistentSession;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
@@ -19,7 +20,6 @@ use secrecy::{ExposeSecret, Secret};
 use sqlx::postgres::PgPoolOptions;
 use sqlx::{PgPool, Pool, Postgres};
 use std::net::TcpListener;
-use actix_files::Files;
 use tracing_actix_web::TracingLogger;
 
 pub struct Application {

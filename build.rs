@@ -22,6 +22,9 @@ fn main() {
         .expect("failed to execute npm run build");
 
     if !build_client_status.success() {
-        panic!("npm run build failed with exit code: {}", build_client_status);
+        panic!(
+            "npm run build failed with exit code: {}",
+            build_client_status
+        );
     }
 }
