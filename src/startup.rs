@@ -2,6 +2,7 @@ use crate::authentication::reject_anonymous_users;
 use crate::configuration::{DatabaseSettings, Settings};
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use crate::routes::*;
+use actix_files::Files;
 use actix_session::config::PersistentSession;
 use actix_session::storage::RedisSessionStore;
 use actix_session::SessionMiddleware;
@@ -10,7 +11,7 @@ use actix_web::cookie::Key;
 use actix_web::dev::Server;
 use actix_web::middleware::from_fn;
 use actix_web::web::Data;
-use actix_web::{web, App, HttpServer};
+use actix_web::{middleware, web, App, HttpServer};
 use actix_web_flash_messages::storage::CookieMessageStore;
 use actix_web_flash_messages::FlashMessagesFramework;
 use rustls::pki_types::pem::PemObject;
@@ -123,7 +124,8 @@ async fn run(
                     .build(),
             )
             .wrap(TracingLogger::default())
-            .route("/", web::get().to(home))
+            .wrap(middleware::Compress::default())
+            .service(web::resource("/").to(home))
             .service(
                 web::scope("/admin")
                     .wrap(from_fn(reject_anonymous_users))
@@ -139,14 +141,12 @@ async fn run(
             .route("/health_check", web::get().to(health_check))
             .route("/subscriptions", web::post().to(subscribe))
             .route("/subscriptions/confirm", web::get().to(confirm))
+            .service(Files::new("/", "./ui/dist/"))
             .app_data(db_pool.clone())
             .app_data(email_client.clone())
             .app_data(base_url.clone())
             .app_data(Data::new(HmacSecret(hmac_secret.clone())))
     });
-    // Todo: maybe go back to this impl once tests can handle tls?
-    // .listen_rustls_0_23(listener, tls_config)?
-    // .run();
 
     let server = match tls_config {
         Some(tls) => server_builder.listen_rustls_0_23(listener, tls)?.run(),

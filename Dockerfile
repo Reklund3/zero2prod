@@ -1,6 +1,6 @@
 FROM lukemathwalker/cargo-chef:latest-rust-1.83 as chef
 WORKDIR /app
-RUN apt update && apt install lld clang -y
+RUN apt update && apt install lld clang nodejs npm -y
 
 FROM chef AS planner
 COPY . .
@@ -28,6 +28,7 @@ RUN apt-get update -y && \
     rm -rf /var/lib/apt/lists/*
 
 COPY --from=builder /app/target/release/zero2prod zero2prod
+COPY --from=builder /app/ui/dist ui/dist
 COPY configuration configuration
 
 ENV APP_ENVIRONMENT production

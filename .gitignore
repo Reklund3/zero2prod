@@ -20,3 +20,17 @@ Cargo.lock
 
 # Ignore security files
 security/
+
+# Ignore node modules and dist dir
+ui/.DS_Store
+ui/.idea
+ui/.pnpm-store
+ui/*.cpuprofile
+ui/*.local
+ui/*.log
+ui/.vscode/
+ui/docs/.vitepress/cache
+ui/packages/vite/LICENSE
+ui/dist
+ui/node_modules
+ui/.eslintcache
