@@ -111,6 +111,7 @@ async fn run(
     let server_builder = HttpServer::new(move || {
         App::new()
             .wrap(message_framework.clone())
+            .wrap(middleware::DefaultHeaders::new())
             .wrap(
                 SessionMiddleware::builder(redis_store.clone(), secret_key.clone())
                     .session_lifecycle(
@@ -123,8 +124,8 @@ async fn run(
                     .cookie_path("/".to_string())
                     .build(),
             )
-            .wrap(TracingLogger::default())
             .wrap(middleware::Compress::default())
+            .wrap(TracingLogger::default())
             .service(web::resource("/").to(home))
             .service(
                 web::scope("/admin")
@@ -136,6 +137,7 @@ async fn run(
                     .route("/password", web::post().to(change_password))
                     .route("/logout", web::post().to(log_out)),
             )
+            .route("/contact", web::post().to(contact))
             .route("/login", web::get().to(login_form))
             .route("/login", web::post().to(login))
             .route("/health_check", web::get().to(health_check))

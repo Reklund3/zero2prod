@@ -1,4 +1,4 @@
-use crate::domain::SubscriberEmail;
+use crate::domain::UserEmail;
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use secrecy::{ExposeSecret, Secret};
 use serde::Deserialize;
@@ -75,8 +75,8 @@ impl EmailClientSettings {
         )
     }
 
-    pub fn sender(&self) -> Result<SubscriberEmail, String> {
-        SubscriberEmail::parse(self.sender_email.clone())
+    pub fn sender(&self) -> Result<UserEmail, String> {
+        UserEmail::parse(self.sender_email.clone())
     }
 
     pub fn timeout(&self) -> std::time::Duration {

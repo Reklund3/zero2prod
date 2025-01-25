@@ -1,6 +1,6 @@
 use crate::domain::NewSubscriber;
-use crate::domain::SubscriberEmail;
-use crate::domain::SubscriberName;
+use crate::domain::UserEmail;
+use crate::domain::UserName;
 use crate::email_client::{ApplicationBaseUrl, EmailClient};
 use crate::routes::error_chain_fmt;
 use actix_web::http::StatusCode;
@@ -16,17 +16,17 @@ use std::fmt::{Debug, Display, Formatter};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
-pub struct FormData {
+pub struct SubscriptionFormData {
     email: String,
     name: String,
 }
 
-impl TryFrom<FormData> for NewSubscriber {
+impl TryFrom<SubscriptionFormData> for NewSubscriber {
     type Error = String;
 
-    fn try_from(value: FormData) -> Result<Self, Self::Error> {
-        let name = SubscriberName::parse(value.name)?;
-        let email = SubscriberEmail::parse(value.email)?;
+    fn try_from(value: SubscriptionFormData) -> Result<Self, Self::Error> {
+        let name = UserName::parse(value.name)?;
+        let email = UserEmail::parse(value.email)?;
         Ok(NewSubscriber { email, name })
     }
 }
@@ -63,7 +63,7 @@ impl ResponseError for SubscribeError {
     )
 )]
 pub async fn subscribe(
-    form: Form<FormData>,
+    form: Form<SubscriptionFormData>,
     pool: Data<PgPool>,
     email_client: Data<EmailClient>,
     base_url: Data<ApplicationBaseUrl>,

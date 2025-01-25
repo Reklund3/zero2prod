@@ -32,6 +32,7 @@ function AppFooter() {
                         display: 'flex',
                         flexDirection: 'row',
                         justifyContent: 'space-between',
+                        mr: 2,
                 }}>
                     <Box sx={{ flexGrow: 0, mr: 1 }}>
                         <IconButton sx={{ display: { xs: 'flex', md: 'flex' } }} href={"https://github.com/Reklund3"}>

@@ -1,7 +1,11 @@
+mod contact_message;
 mod new_subscriber;
-mod subscriber_email;
-mod subscriber_name;
+mod user_email;
+mod user_name;
+mod verified_contact_form;
 
+pub use contact_message::ContactMessage;
 pub use new_subscriber::NewSubscriber;
-pub use subscriber_email::SubscriberEmail;
-pub use subscriber_name::SubscriberName;
+pub use user_email::UserEmail;
+pub use user_name::UserName;
+pub use verified_contact_form::VerifiedContactForm;
