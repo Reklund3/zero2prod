@@ -74,7 +74,7 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
         await new Promise(resolve => setTimeout(resolve, 500)); // 1-second delay
 
         try {
-            const response = await fetch('https://www.roberteklund.us/contact', {
+            const response = await fetch('/contact', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',

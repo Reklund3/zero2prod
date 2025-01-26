@@ -12,7 +12,7 @@ import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import Paper from '@mui/material/Paper';
 import {useSelectedMenuItem} from "./components/MenuItemSelected.tsx";
-import {CardActions} from "@mui/material";
+import CardActions from "@mui/material/CardActions";
 import GitHubIcon from "@mui/icons-material/GitHub";
 import IconButton from "@mui/material/IconButton";
 
