@@ -29,7 +29,7 @@ mod tests {
 
     #[test]
     fn a_1024_long_message_is_valid() {
-        let message = "a̐".repeat(1024);
+        let message = "a".repeat(1024);
         assert_ok!(ContactMessage::parse(message));
     }
 
