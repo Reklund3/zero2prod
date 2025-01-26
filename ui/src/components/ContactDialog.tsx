@@ -1,18 +1,18 @@
+import Box from "@mui/material/Box";
 import Button from '@mui/material/Button';
+import CheckCircle from "@mui/icons-material/CheckCircle";
 import CircularProgress from '@mui/material/CircularProgress';
+import Collapse from "@mui/material/Collapse";
+import Dangerous from "@mui/icons-material/Dangerous";
 import Dialog from '@mui/material/Dialog';
 import DialogActions from '@mui/material/DialogActions';
 import DialogContent from '@mui/material/DialogContent';
 import DialogTitle from '@mui/material/DialogTitle';
 import Divider from "@mui/material/Divider";
 import FormControl from "@mui/material/FormControl";
-import FormHelperText from "@mui/material/FormHelperText";
-import TextField from "@mui/material/TextField";
 import React from "react";
+import TextField from "@mui/material/TextField";
 import Typography from "@mui/material/Typography";
-import {Collapse} from "@mui/material";
-import Box from "@mui/material/Box";
-import {CheckCircle, Dangerous} from "@mui/icons-material";
 
 interface ContactDialogProps {
     dialogOpen: boolean;
@@ -30,22 +30,68 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
         message: '',
     });
 
-    const [errors, setErrors] = React.useState({
-        name: '',
-        email: '',
-        message: '',
-    });
+    const [nameError, setNameError] = React.useState<string>('');
+    const [emailError, setEmailError] = React.useState<string>('');
+    const [messageError, setMessageError] = React.useState<string>('');
+
+    const [hasMounted, setHasMounted] = React.useState(false); // Track mounting
+
+    React.useEffect(() => {
+        setHasMounted(true);  // Set to true after the first render
+    }, []); // Empty dependency array ensures this runs only once
+
+
+    const validateName = (name: string) => {
+        if (hasMounted && name.length === 0) {
+            return "This field is required";
+        } else if (name.length > 256) {
+            return `${name.length}/256 characters (${name.length - 256} too many)`;
+        }
+        return "";
+    };
+
+    const validateEmail = (email: string) => {
+        if (hasMounted && email.length === 0) {
+            return "This field is required";
+        }
+        // Add email format validation here if needed
+        return "";
+    };
+
+    const validateMessage = (message: string) => {
+        if (hasMounted && message.length === 0) {
+            return "This field is required";
+        } else if (message.length > 1024) {  // Correct the character limit here
+            return `${message.length}/1024 characters (${message.length - 1024} too many)`;
+        }
+        return "";
+    };
+
+    React.useEffect(() => {
+        setNameError(validateName(formData.name));
+    }, [formData.name]);
+    React.useEffect(() => {
+        setEmailError(validateEmail(formData.email));
+    }, [formData.email]);
+
+    React.useEffect(() => {
+        setMessageError(validateMessage(formData.message));
+    }, [formData.message]);
+
+    React.useEffect(() => {
+        if (nameError === '' && emailError === '' && messageError === '' && formData.name.length > 0 && formData.email.length > 0 && formData.message.length > 0) {
+            setIsFormValid(true);
+        } else {
+            setIsFormValid(false);
+        }
+    }, [nameError, emailError, messageError, formData.name, formData.email, formData.message]);
+
+    const [isFormValid, setIsFormValid] = React.useState(false);
 
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [requestStatus, setRequestStatus] = React.useState<{ success?: boolean, message?: string } | null>(null);
 
     const handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-        //TODO: Do client side validation on this.
-        setErrors({
-            ...errors,
-            [event.target.id]: event.target.value ? '' : 'This field is required',
-        });
-
         setFormData({
             ...formData,
             [event.target.id]: event.target.value,
@@ -54,15 +100,12 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
 
     const handleClose = () => {
         onClose();
-        setTimeout(
-            () => {
-                setFormData({ name: '', email: '', message: '' });
-                setErrors({ name: '', email: '', message: '' });
-                setIsSubmitting(false);
-                setRequestStatus(null);
-            },
-            500
-        )
+        setFormData({ name: '', email: '', message: '' });
+        setNameError('');
+        setEmailError('');
+        setMessageError('');
+        setIsSubmitting(false);
+        setRequestStatus(null);
     }
 
     const onSubmit: (formData: { name: string, email: string, message: string }) => Promise<void> = async data => {
@@ -112,18 +155,10 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
     }
 
     const handleContactSubmit = () => {
-        const newErrors = { name: '', email: '', message: '' };
-        if (!formData.name) newErrors.name = 'This field is required';
-        if (!formData.email) newErrors.email = 'This field is required';
-        if (!formData.message) newErrors.message = 'This field is required';
-
-        setErrors(newErrors);
-
-
-        if (Object.values(newErrors).every(error => error === '')) {
+        if (nameError === '' && emailError === '' && messageError === '') {
             onSubmit(formData);
         } else {
-            console.log("Form submission failed. Errors: ", newErrors);
+            console.log("Form submission failed. Errors: ", { nameError, emailError, messageError });
         }
     }
 
@@ -167,17 +202,29 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
                                 value={formData.name}
                                 onChange={handleFormChange}
                                 fullWidth
+                                helperText={
+                                    nameError || (hasMounted ? `${formData.name.length}/256 characters` : "")
+                                }
+                                error={!!nameError}
                                 sx = {{
                                     "& legend": {
                                         transition: "unset",
                                     }
                                 }}
                             />
-                            <FormHelperText id={"name-error"}>{errors.name}</FormHelperText>
                         </FormControl>
                         <FormControl fullWidth>
-                            <TextField margin="dense" id="email" label="Email Address" type="email" value={formData.email} onChange={handleFormChange} fullWidth />
-                            <FormHelperText id={"email-error"}>{errors.email}</FormHelperText>
+                            <TextField
+                                margin="dense"
+                                id="email"
+                                label="Email Address"
+                                type="email"
+                                value={formData.email}
+                                onChange={handleFormChange}
+                                fullWidth
+                                helperText={emailError}
+                                error={!!emailError}
+                            />
                         </FormControl>
                         <FormControl fullWidth>
                             <TextField
@@ -190,13 +237,14 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
                                 value={formData.message}
                                 onChange={handleFormChange}
                                 fullWidth
+                                helperText={messageError || `${formData.message.length}/1024 characters`}
+                                error={!!messageError}
                                 sx = {{
                                     "& legend": {
                                         transition: "unset",
                                     }
                                 }}
                             />
-                            <FormHelperText id={"message-error"}>{errors.message}</FormHelperText>
                         </FormControl>
                     </Box>
                 </Collapse>
@@ -205,7 +253,7 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
             {!requestStatus && !isSubmitting &&
                 <DialogActions>
                     <Button onClick={handleClose} disabled={isSubmitting} variant="contained" color="error">Cancel</Button>
-                    <Button onClick={handleContactSubmit} disabled={isSubmitting} variant="contained">Send</Button>
+                    <Button onClick={handleContactSubmit} disabled={isSubmitting || !isFormValid} variant="contained">Send</Button>
                 </DialogActions>
             }
             {isSubmitting &&
