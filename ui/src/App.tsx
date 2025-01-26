@@ -59,9 +59,6 @@ export default function App() {
                             handling low priority bug fixes. I played a key role in modernizing existing systems and
                             implementing new features to enhance the user experience.
                         </Typography>
-                        <Typography variant="body1" sx={{ mb: 2 }}>
-                            more
-                        </Typography>
                     </Box>
                     <Box hidden={!(selectedOption == "Skills")}>
                         <Typography variant="h5" component="h5" sx={{mb: 2, textDecoration: 'underline'}}>Soft Skills</Typography>
