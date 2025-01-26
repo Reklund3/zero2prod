@@ -138,16 +138,16 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
             clearTimeout(timeoutId);
 
             if (response.ok) {
-                setRequestStatus({ success: true, message: 'Thank you for reaching out.\nI look forward to speaking with you.' });
+                setRequestStatus({ success: true, message: 'Thank you for reaching out. I look forward to speaking with you.' });
                 //TODO: Update the dialog with a success
                 console.log("Thank you for reaching out. I look forward to speaking with you.");
             } else {
                 try {
                     const errorData: ContactRejected = await response.json();
-                    setRequestStatus({ success: false, message: "Failed to submit contact information. Response: " + errorData.reason });
+                    setRequestStatus({ success: false, message: "Failed to submit contact information: " + errorData.reason });
                 } catch (parseError) {
                     console.error("Failed to submit contact information. Error parsing response: ", parseError);
-                    setRequestStatus({ success: false, message: "Failed to submit contact information.\nPlease try again shortly." });
+                    setRequestStatus({ success: false, message: "Failed to submit contact information. Please try again shortly." });
                 }
             }
         } catch (error) {

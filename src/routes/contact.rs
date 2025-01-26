@@ -4,8 +4,8 @@ use crate::routes::error_chain_fmt;
 use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json};
 use actix_web::{HttpResponse, ResponseError};
-use anyhow::Context;
 use serde::{Deserialize, Serialize};
+use sqlx::error::ErrorKind;
 use sqlx::PgPool;
 use std::fmt::{Debug, Formatter};
 use uuid::Uuid;
@@ -75,18 +75,59 @@ pub async fn contact(
 ) -> Result<HttpResponse, ContactError> {
     match &VerifiedContactForm::try_from(form.0) {
         Ok(new_contact) => {
-            insert_contact(new_contact, &pool)
-                .await
-                .context("Failed to insert the new contact information")?;
-            Ok(HttpResponse::Ok().finish())
+            match insert_contact(new_contact, &pool).await {
+                Ok(id) => {
+                    tracing_log::log::info!("Successfully inserted contact into database: {}", id);
+                    Ok(HttpResponse::Ok().finish())
+                }
+                Err(sqlx::Error::Database(db_error)) => {
+                    // Check for duplicate key violation
+                    if db_error.kind() == ErrorKind::UniqueViolation {
+                        tracing_log::log::error!("Duplicate key violation: {}", db_error);
+                        match serde_json::to_string(&ContactRejected {
+                            reason: "It appears that you have already reached out. We will get in touch at our earliest convenience.".to_string(),
+                        }) {
+                            Ok(body) => Ok(HttpResponse::Conflict().body(body)),
+                            Err(err) => {
+                                tracing_log::log::error!("Failed to serialize error response. {}", err);
+                                Ok(HttpResponse::InternalServerError()
+                                    .body("Something went wrong, please try again.".to_string()))
+                            }
+                        }
+                    } else {
+                        tracing_log::log::error!(
+                            "Failed to insert contact into database: {}",
+                            db_error
+                        );
+                        Ok(HttpResponse::InternalServerError()
+                            .body("Something went wrong, please try again.".to_string()))
+                    }
+                }
+                Err(error) => {
+                    tracing_log::log::error!("Failed to insert contact into database: {}", error);
+                    match serde_json::to_string(&ContactRejected {
+                        reason: error.to_string(),
+                    }) {
+                        Ok(body) => Ok(HttpResponse::BadRequest().body(body)),
+                        Err(err) => {
+                            tracing_log::log::error!("Failed to serialize error response. {}", err);
+                            Ok(HttpResponse::InternalServerError()
+                                .body("Something went wrong, please try again.".to_string()))
+                        }
+                    }
+                }
+            }
         }
         Err(error) => {
             match serde_json::to_string(&ContactRejected {
                 reason: error.to_string(),
             }) {
                 Ok(body) => Ok(HttpResponse::BadRequest().body(body)),
-                Err(_) => Ok(HttpResponse::InternalServerError()
-                    .body("Something went wrong, please try again.".to_string())),
+                Err(err) => {
+                    tracing_log::log::error!("Failed to serialize error response. {}", err);
+                    Ok(HttpResponse::InternalServerError()
+                        .body("Something went wrong, please try again.".to_string()))
+                }
             }
         }
     }
