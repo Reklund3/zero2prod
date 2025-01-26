@@ -23,6 +23,32 @@ interface ContactRejected {
     reason: string;
 }
 
+const validateName = (name: string) => {
+    if (name.length === 0) {
+        return "This field is required";
+    } else if (name.length > 256) {
+        return `${name.length}/256 characters (${name.length - 256} too many)`;
+    }
+    return "";
+};
+
+const validateEmail = (email: string) => {
+    if (email.length === 0) {
+        return "This field is required";
+    }
+    // Add email format validation here if needed
+    return "";
+};
+
+const validateMessage = (message: string) => {
+    if (message.length === 0) {
+        return "This field is required";
+    } else if (message.length > 1024) {  // Correct the character limit here
+        return `${message.length}/1024 characters (${message.length - 1024} too many)`;
+    }
+    return "";
+};
+
 const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: ContactDialogProps) => {
     const [formData, setFormData] = React.useState({
         name: '',
@@ -30,53 +56,36 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
         message: '',
     });
 
+    const [touched, setTouched] = React.useState({
+        name: false,
+        email: false,
+        message: false,
+    });
+
     const [nameError, setNameError] = React.useState<string>('');
     const [emailError, setEmailError] = React.useState<string>('');
     const [messageError, setMessageError] = React.useState<string>('');
 
-    const [hasMounted, setHasMounted] = React.useState(false); // Track mounting
+    const [isSubmitting, setIsSubmitting] = React.useState(false);
+    const [requestStatus, setRequestStatus] = React.useState<{ success?: boolean, message?: string } | null>(null);
+
 
     React.useEffect(() => {
-        setHasMounted(true);  // Set to true after the first render
-    }, []); // Empty dependency array ensures this runs only once
-
-
-    const validateName = (name: string) => {
-        if (hasMounted && name.length === 0) {
-            return "This field is required";
-        } else if (name.length > 256) {
-            return `${name.length}/256 characters (${name.length - 256} too many)`;
+        if (touched.name) { // Only validate if the dialog is open
+            setNameError(validateName(formData.name));
         }
-        return "";
-    };
-
-    const validateEmail = (email: string) => {
-        if (hasMounted && email.length === 0) {
-            return "This field is required";
+    }, [formData.name, touched.name]);
+    React.useEffect(() => {
+        if (touched.email) { // Only validate if the dialog is open
+            setEmailError(validateEmail(formData.email));
         }
-        // Add email format validation here if needed
-        return "";
-    };
+    }, [formData.email, touched.email]);
 
-    const validateMessage = (message: string) => {
-        if (hasMounted && message.length === 0) {
-            return "This field is required";
-        } else if (message.length > 1024) {  // Correct the character limit here
-            return `${message.length}/1024 characters (${message.length - 1024} too many)`;
+    React.useEffect(() => {
+        if (touched.message) { // Only validate if the dialog is open
+            setMessageError(validateMessage(formData.message));
         }
-        return "";
-    };
-
-    React.useEffect(() => {
-        setNameError(validateName(formData.name));
-    }, [formData.name]);
-    React.useEffect(() => {
-        setEmailError(validateEmail(formData.email));
-    }, [formData.email]);
-
-    React.useEffect(() => {
-        setMessageError(validateMessage(formData.message));
-    }, [formData.message]);
+    }, [formData.message, touched.message]);
 
     React.useEffect(() => {
         if (nameError === '' && emailError === '' && messageError === '' && formData.name.length > 0 && formData.email.length > 0 && formData.message.length > 0) {
@@ -88,24 +97,24 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
 
     const [isFormValid, setIsFormValid] = React.useState(false);
 
-    const [isSubmitting, setIsSubmitting] = React.useState(false);
-    const [requestStatus, setRequestStatus] = React.useState<{ success?: boolean, message?: string } | null>(null);
-
     const handleFormChange = (event: React.ChangeEvent<HTMLInputElement>) => {
         setFormData({
             ...formData,
             [event.target.id]: event.target.value,
         });
+        setTouched({ ...touched, [event.target.id]: true });
     }
 
     const handleClose = () => {
-        onClose();
         setFormData({ name: '', email: '', message: '' });
         setNameError('');
         setEmailError('');
         setMessageError('');
+        setIsFormValid(false);
         setIsSubmitting(false);
         setRequestStatus(null);
+        setTouched({name: false, email: false, message: false});
+        onClose();
     }
 
     const onSubmit: (formData: { name: string, email: string, message: string }) => Promise<void> = async data => {
@@ -203,7 +212,7 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
                                 onChange={handleFormChange}
                                 fullWidth
                                 helperText={
-                                    nameError || (hasMounted ? `${formData.name.length}/256 characters` : "")
+                                    nameError || `${formData.name.length}/256 characters`
                                 }
                                 error={!!nameError}
                                 sx = {{
