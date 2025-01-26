@@ -50,14 +50,14 @@ export default function App() {
                             been unleashed. You have you recursive, pure, and higher order functions. But, it didn’t
                             stop there, Scala has tail recursive optimizations. Not only are there function methods but
                             there are functional paradigms for managing data, there is immutability, abstract data types
-                            or ADTs. I hadn’t felt so alive in I don’t know how long.
+                            or ADTs.
                         </Typography>
                         <Typography variant="body1" sx={{ mb: 2 }}>
-                            I attacked the challenges, burning the midnight oil testing out new ideas, reading docs and
-                            books on these new topics. I quick was noticed by my peers and began to rise through the
-                            ranks. As I became more versed I was required to take on more responsibility. I wasn’t just
-                            some trainee that was handling low priority bug fixes. I played a key role in modernizing
-                            existing systems and implementing new features to enhance the user experience.
+                            Attacking the challenges, burning the midnight oil testing out new ideas, reading docs and
+                            books on these new topics. My peers quickly took notice, raising through the ranks. My
+                            versatility lead to greater responsibility and trust. No longer just some trainee that was
+                            handling low priority bug fixes. I played a key role in modernizing existing systems and
+                            implementing new features to enhance the user experience.
                         </Typography>
                         <Typography variant="body1" sx={{ mb: 2 }}>
                             more

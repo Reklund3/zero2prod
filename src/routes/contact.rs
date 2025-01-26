@@ -5,7 +5,6 @@ use actix_web::http::StatusCode;
 use actix_web::web::{Data, Json};
 use actix_web::{HttpResponse, ResponseError};
 use anyhow::Context;
-use chrono::Utc;
 use serde::{Deserialize, Serialize};
 use sqlx::PgPool;
 use std::fmt::{Debug, Formatter};
@@ -109,7 +108,7 @@ async fn insert_contact(form: &VerifiedContactForm, pool: &PgPool) -> Result<Uui
         form.email.as_ref(),
         form.name.as_ref(),
         form.message.as_ref(),
-        Utc::now()
+        chrono::Utc::now()
     )
     .execute(pool)
     .await?;
