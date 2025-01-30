@@ -14,6 +14,7 @@ path = "src/main.rs"
 name = "zero2prod"
 
 [dependencies]
+ammonia = "4"
 anyhow = "1"
 actix-files = "0.6"
 actix-session = { version = "0.10", features = ["redis-session-rustls"] }
@@ -37,7 +38,7 @@ tracing-bunyan-formatter = "0.3"
 tracing-log = "0.2"
 tracing-subscriber = { version = "0.3", features = ["registry", "env-filter"] }
 unicode-segmentation = "1.10.1"
-uuid = {version = "1", features = ["v4", "serde"]}
+uuid = {version = "1", features = ["v4", "v5", "serde"]}
 validator = "0.18"
 
 [dependencies.sqlx]

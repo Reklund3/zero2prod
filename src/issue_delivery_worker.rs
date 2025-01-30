@@ -1,5 +1,5 @@
 use crate::{configuration::Settings, startup::get_pg_pool};
-use crate::{domain::SubscriberEmail, email_client::EmailClient};
+use crate::{domain::UserEmail, email_client::EmailClient};
 use sqlx::{PgPool, Postgres, Transaction};
 use std::time::Duration;
 use tracing::{field::display, Span};
@@ -50,7 +50,7 @@ pub async fn try_execute_task(
     Span::current()
         .record("newsletter_issue_id", display(issue_id))
         .record("subscriber_email", display(&email));
-    match SubscriberEmail::parse(email.clone()) {
+    match UserEmail::parse(email.clone()) {
         Ok(email) => {
             let issue = get_issue(pool, issue_id).await?;
             if let Err(e) = email_client

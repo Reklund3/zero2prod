@@ -1,8 +1,8 @@
-use crate::domain::subscriber_email::SubscriberEmail;
-use crate::domain::subscriber_name::SubscriberName;
+use crate::domain::user_email::UserEmail;
+use crate::domain::user_name::UserName;
 
 #[derive(Debug)]
 pub struct NewSubscriber {
-    pub email: SubscriberEmail,
-    pub name: SubscriberName,
+    pub email: UserEmail,
+    pub name: UserName,
 }

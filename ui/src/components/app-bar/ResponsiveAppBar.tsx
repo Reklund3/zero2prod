@@ -1,17 +1,18 @@
 import React, {useRef, useLayoutEffect} from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
-import Toolbar from '@mui/material/Toolbar';
-import IconButton from '@mui/material/IconButton';
-import Typography from '@mui/material/Typography';
-import Menu from '@mui/material/Menu';
-import MenuIcon from '@mui/icons-material/Menu';
-import Container from '@mui/material/Container';
 import Button from '@mui/material/Button';
+import Container from '@mui/material/Container';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
 import MenuItem from '@mui/material/MenuItem';
+import Toolbar from '@mui/material/Toolbar';
+import Typography from '@mui/material/Typography';
 import CodeIcon from '@mui/icons-material/Code';
+import MenuIcon from '@mui/icons-material/Menu';
 import {menuItemsTitles} from "../constants/constants.ts";
 import {useSelectedMenuItem} from "../MenuItemSelected.tsx";
+import ContactDialog from "../ContactDialog.tsx";
 
 interface ResponsiveAppBarProps {
     onHeightMeasured: (height: number) => void;
@@ -27,6 +28,7 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
     }, [onHeightMeasured]);
 
     const { selectedOption, setSelectedOption } = useSelectedMenuItem();
+    const [contactDialogOpen, setContactDialogOpen] = React.useState(false);
 
     const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
 
@@ -43,6 +45,10 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
         setSelectedOption(menuItem);
     }
 
+    const handleContactClick = () => {
+        setContactDialogOpen(true)
+    }
+
     return (
         <AppBar position="fixed" ref={appBarRef}>
             <Container maxWidth="xl">
@@ -51,6 +57,9 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                     <Typography
                         variant="h6"
                         noWrap
+                        href="/"
+                        onClick={() => setSelectedOption("Summary")}
+                        component="a"
                         sx={{
                             mr: 2,
                             display: { xs: 'none', md: 'flex' },
@@ -102,6 +111,8 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                     <Typography
                         variant="h5"
                         noWrap
+                        href="#summary"
+                        onClick={() => setSelectedOption("Summary")}
                         component="a"
                         sx={{
                             mr: 2,
@@ -145,6 +156,18 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                             </Box>
                         ))}
                     </Box>
+                    <Box sx={{ flexGrow: 1, display: { xs: 'flex', md: 'flex' }, justifyContent: 'flex-end' }}>
+                        <Button
+                            onClick={handleContactClick}
+                            sx={{
+                                display: 'block',
+                            }}
+                            variant="contained"
+                        >
+                            Contact Now
+                        </Button>
+                    </Box>
+                    <ContactDialog dialogOpen={contactDialogOpen} onClose={() => setContactDialogOpen(false)}/>
                 </Toolbar>
             </Container>
         </AppBar>

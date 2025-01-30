@@ -1,8 +1,5 @@
-import Typography from "@mui/material/Typography";
-import Box from "@mui/material/Box";
-import Link from "@mui/material/Link";
+import { Box, Link, Typography } from "@mui/material";
 import React from "react";
-
 
 function Copyright() {
     const currentYear = new Date().getFullYear();
@@ -13,6 +10,7 @@ function Copyright() {
                 variant="body2"
                 align="center"
                 sx={{
+                    ml: 3,
                     color: 'text.secondary',
                 }}
             >
