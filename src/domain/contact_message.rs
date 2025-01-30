@@ -1,15 +1,11 @@
-const FORBIDDEN_CHARACTERS: [char; 2] = ['<', '>'];
-
 #[derive(Debug)]
 pub struct ContactMessage(String);
 impl ContactMessage {
     pub fn parse(message: String) -> Result<Self, String> {
         if message.trim().is_empty() {
-            Err("Please provide a message to assist in .".into())
+            Err("Please provide a message, ideally with information regarding your inquiry.".into())
         } else if message.len() > 1024 {
             Err("Please provide a message that is less than 1024 characters.".into())
-        } else if message.chars().any(|g| FORBIDDEN_CHARACTERS.contains(&g)) {
-            Err("Message contains illegal characters, please remove and try again.".into())
         } else {
             Ok(Self(message))
         }

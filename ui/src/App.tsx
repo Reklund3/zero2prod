@@ -1,20 +1,7 @@
-import React from 'react';
-import Card from '@mui/material/Card';
-import CardContent from '@mui/material/CardContent';
-import CardHeader from '@mui/material/CardHeader';
-import Container from '@mui/material/Container';
-import Divider from '@mui/material/Divider';
-import Typography from '@mui/material/Typography';
-import Box from '@mui/material/Box';
-import Link from '@mui/material/Link';
-import List from '@mui/material/List';
-import ListItem from '@mui/material/ListItem';
-import ListItemText from '@mui/material/ListItemText';
-import Paper from '@mui/material/Paper';
+import { Box, Card, CardActions, CardContent, CardHeader, Container, Divider, IconButton, Link, Paper, Typography } from '@mui/material';
 import {useSelectedMenuItem} from "./components/MenuItemSelected.tsx";
-import CardActions from "@mui/material/CardActions";
 import GitHubIcon from "@mui/icons-material/GitHub";
-import IconButton from "@mui/material/IconButton";
+import React from 'react';
 
 export default function App() {
     const { selectedOption } = useSelectedMenuItem();
@@ -84,71 +71,70 @@ export default function App() {
                             <CardHeader title="Senior Micro-Service Engineer" subheader="Cloud Imperium Games - 03/2022 - Present"/>
                             <Divider variant="fullWidth" />
                             <CardContent>
-                                <List dense={true}>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Led code reviews for full team across all domains, infrastructure, platform code, and frontend."/>
-                                    </ListItem>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Held cross-functional meetings with stakeholders to gather technical requirements, reducing ambiguity and ensuring delivery on time. Additionally, managed feature request and bug reports."/>
-                                    </ListItem>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Implemented Authorization (AuthZ) and Authentication (AuthN) for service offerings using Attribute-Based Access Control (ABAC), securing systems against unauthorized access."/>
-                                    </ListItem>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Developed and maintained internal Scala libraries depended on by a large portion of the teams internal services."/>
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemText primary="Investigated FFI implementations with Bindgen to work on a port of Pekko to Rust. This would allow for keeping the current Scala tests and strangle thorn Scala/java into Rust."/>
-                                    </ListItem>
-                                </List>
+                                <Typography sx={{ p: 1 }}>
+                                    Led code reviews for full team across all domains, infrastructure, platform code, and frontend.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Held cross-functional meetings with stakeholders to gather technical requirements, reducing ambiguity and ensuring delivery on time. Additionally, managed feature request and bug reports.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Implemented Authorization (AuthZ) and Authentication (AuthN) for service offerings using Attribute-Based Access Control (ABAC), securing systems against unauthorized access.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Developed and maintained internal Scala libraries depended on by a large portion of the teams internal services.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Investigated FFI implementations with Bindgen to work on a port of Pekko to Rust. This would allow for keeping the current Scala tests and strangle thorn Scala/java into Rust.
+                                </Typography>
                             </CardContent>
                         </Card>
                         <Card sx={{ m: 2 }}>
                             <CardHeader title="Micro-Service Engineer" subheader="Cloud Imperium Games - 03/2021 - 03/2022" />
                             <Divider variant="fullWidth" />
                             <CardContent>
-                                <List>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Proactively mentored junior engineers in system design, containerization, and deployment best practices."/>
-                                    </ListItem>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Designed and deployed Kubernetes-based micro-services, increasing scalability and fault tolerance."/>
-                                    </ListItem>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Enhanced deployment automation using Helm, reducing deployment times while maintaining system reliability."/>
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemText primary="Contributed and maintained full-stack efforts on the teams internal offerings."/>
-                                    </ListItem>
-                                </List>
+                                <Typography sx={{ p: 1 }}>
+                                    Proactively mentored junior engineers in system design, containerization, and deployment best practices.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Designed and deployed Kubernetes-based micro-services, increasing scalability and fault tolerance.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Enhanced deployment automation using Helm, reducing deployment times while maintaining system reliability.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Contributed and maintained full-stack efforts on the teams internal offerings.
+                                </Typography>
                             </CardContent>
                         </Card>
                         <Card sx={{ m: 2 }}>
                             <CardHeader title="DevOps Engineer" subheader="Cloud Imperium Games - 03/2020 - 03/2021" />
                             <Divider variant="fullWidth" />
                             <CardContent>
-                                <List>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Contributed to the development and maintenance internal full stack software offering."/>
-                                    </ListItem>
-                                    <ListItem divider={true}>
-                                        <ListItemText primary="Developed CI/CD pipelines in GitLab to automate deployments, reducing failures and build times."/>
-                                    </ListItem>
-                                    <ListItem>
-                                        <ListItemText primary="Built and maintained scalable internal Docker images to improve productivity for integrated testing."/>
-                                    </ListItem>
-                                </List>
+                                <Typography sx={{ p: 1 }}>
+                                    Contributed to the development and maintenance internal full stack software offering.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography  sx={{ p: 1 }}>
+                                    Developed CI/CD pipelines in GitLab to automate deployments, reducing failures and build times.
+                                </Typography>
+                                <Divider variant="fullWidth" />
+                                <Typography sx={{ p: 1 }}>
+                                    Built and maintained scalable internal Docker images to improve productivity for integrated testing.
+                                </Typography>
                             </CardContent>
                         </Card>
                         <Card sx={{ m: 2 }}>
                             <CardHeader title="Associate DevOps Engineer" subheader="Cloud Imperium Games - 03/2019 - 03/2020" />
                             <Divider variant="fullWidth" />
                             <CardContent>
-                                <List>
-                                    <ListItem>
-                                        <ListItemText primary="???"/>
-                                    </ListItem>
-                                </List>
+                                coming soon
                             </CardContent>
                         </Card>
                     </Box>

@@ -1,10 +1,7 @@
-import React from "react";
 import Copyright from "../Copyright.tsx";
-import AppBar from "@mui/material/AppBar";
-import Box from "@mui/material/Box";
-import IconButton from "@mui/material/IconButton";
-import GitHubIcon from "@mui/icons-material/GitHub";
-import LinkedInIcon from "@mui/icons-material/LinkedIn";
+import { AppBar, Box, IconButton } from "@mui/material";
+import { GitHub, LinkedIn } from "@mui/icons-material";
+import React from "react";
 
 function AppFooter() {
     return (
@@ -36,12 +33,12 @@ function AppFooter() {
                 }}>
                     <Box sx={{ flexGrow: 0, mr: 1 }}>
                         <IconButton sx={{ display: { xs: 'flex', md: 'flex' } }} href={"https://github.com/Reklund3"}>
-                            <GitHubIcon sx={{ display: { xs: 'flex', md: 'flex' } }} />
+                            <GitHub sx={{ display: { xs: 'flex', md: 'flex' } }} />
                         </IconButton>
                     </Box>
                     <Box sx={{ flexGrow: 0 }}>
                         <IconButton sx={{ display: { xs: 'flex', md: 'flex' } }} href={"https://www.linkedin.com/in/robert-eklund-64302976/"}>
-                            <LinkedInIcon sx={{ display: { xs: 'flex', md: 'flex' } }} />
+                            <LinkedIn sx={{ display: { xs: 'flex', md: 'flex' } }} />
                         </IconButton>
                     </Box>
                 </Box>

@@ -1,18 +1,7 @@
-import Box from "@mui/material/Box";
-import Button from '@mui/material/Button';
-import CheckCircle from "@mui/icons-material/CheckCircle";
-import CircularProgress from '@mui/material/CircularProgress';
-import Collapse from "@mui/material/Collapse";
-import Dangerous from "@mui/icons-material/Dangerous";
-import Dialog from '@mui/material/Dialog';
-import DialogActions from '@mui/material/DialogActions';
-import DialogContent from '@mui/material/DialogContent';
-import DialogTitle from '@mui/material/DialogTitle';
-import Divider from "@mui/material/Divider";
-import FormControl from "@mui/material/FormControl";
+import { Box, Button, CircularProgress, Collapse, Dialog, DialogActions, DialogContent, DialogTitle, Divider, FormControl, TextField, Typography } from "@mui/material";
+import { CheckCircle, Dangerous } from "@mui/icons-material";
+import DOMPurify from 'dompurify';
 import React from "react";
-import TextField from "@mui/material/TextField";
-import Typography from "@mui/material/Typography";
 
 interface ContactDialogProps {
     dialogOpen: boolean;
@@ -23,9 +12,39 @@ interface ContactRejected {
     reason: string;
 }
 
+const illegalNameChars =  ['/', '(', ')', '"', '<', '>', '\\', '{', '}']
+
+function checkNameForIllegalChars(name: string) {
+    const foundIllegalChars = [];
+    for (const char of illegalNameChars) {
+        if (name.includes(char)) {
+            foundIllegalChars.push(char);
+        }
+    }
+    return foundIllegalChars;
+}
+
+function debounce<T extends (...args: any[]) => any>(func: T, wait: number) {
+    let timeout: ReturnType<typeof setTimeout> | null;
+
+    return (...args: Parameters<T>) => {
+        if (timeout) {
+            clearTimeout(timeout)
+        }
+
+        timeout = setTimeout(() => {
+            func(...args);
+            timeout = null;
+        }, wait);
+    }
+}
+
 const validateName = (name: string) => {
+    const invalidChars = checkNameForIllegalChars(name);
     if (name.length === 0) {
         return "This field is required";
+    } else if (invalidChars.length > 0) {
+        return `Name contains illegal characters: ${invalidChars.join(", ")}`;
     } else if (name.length > 256) {
         return `${name.length}/256 characters (${name.length - 256} too many)`;
     }
@@ -41,8 +60,13 @@ const validateEmail = (email: string) => {
 };
 
 const validateMessage = (message: string) => {
+    const sanitizedMessage = DOMPurify.sanitize(message);
     if (message.length === 0) {
         return "This field is required";
+    } else if (sanitizedMessage.length === 0) {
+        return "Invalid input. Please remove any HTML tags."
+    } else if (sanitizedMessage.length != message.length) {
+        return "Invalid input. Please remove any HTML tags."
     } else if (message.length > 1024) {  // Correct the character limit here
         return `${message.length}/1024 characters (${message.length - 1024} too many)`;
     }
@@ -69,7 +93,6 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
     const [isSubmitting, setIsSubmitting] = React.useState(false);
     const [requestStatus, setRequestStatus] = React.useState<{ success?: boolean, message?: string } | null>(null);
 
-
     React.useEffect(() => {
         if (touched.name) { // Only validate if the dialog is open
             setNameError(validateName(formData.name));
@@ -81,11 +104,18 @@ const ContactDialog: React.FC<ContactDialogProps> = ({dialogOpen, onClose}: Cont
         }
     }, [formData.email, touched.email]);
 
+    const debounceValidateMessage = React.useCallback(
+        debounce(
+            (message: string) => setMessageError(validateMessage(message)),
+            500
+        ),
+        []
+    );
     React.useEffect(() => {
         if (touched.message) { // Only validate if the dialog is open
-            setMessageError(validateMessage(formData.message));
+            debounceValidateMessage(formData.message);
         }
-    }, [formData.message, touched.message]);
+    }, [formData.message, touched.message, debounceValidateMessage]);
 
     React.useEffect(() => {
         if (nameError === '' && emailError === '' && messageError === '' && formData.name.length > 0 && formData.email.length > 0 && formData.message.length > 0) {

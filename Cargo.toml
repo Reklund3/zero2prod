@@ -14,6 +14,7 @@ path = "src/main.rs"
 name = "zero2prod"
 
 [dependencies]
+ammonia = "4"
 anyhow = "1"
 actix-files = "0.6"
 actix-session = { version = "0.10", features = ["redis-session-rustls"] }

@@ -20,10 +20,19 @@ pub struct ContactFormData {
 impl TryFrom<ContactFormData> for VerifiedContactForm {
     type Error = String;
 
+    #[tracing::instrument(name = "Adapting ContactFormData to VerifiedContactForm", skip(value))]
     fn try_from(value: ContactFormData) -> Result<Self, Self::Error> {
+        let sanitized_message = ammonia::clean(value.message.as_ref());
+        if sanitized_message.len() != value.message.len() {
+            tracing_log::log::error!(
+                "user: {} - email: {} tried to submit an invalid message.",
+                value.name,
+                value.email
+            );
+        }
         let name = UserName::parse(value.name)?;
         let email = UserEmail::parse(value.email)?;
-        let message = ContactMessage::parse(value.message)?;
+        let message = ContactMessage::parse(sanitized_message)?;
         Ok(VerifiedContactForm {
             name,
             email,
