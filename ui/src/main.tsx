@@ -6,22 +6,15 @@ import Box from '@mui/material/Box';
 import theme from './theme';
 import App from './App';
 import ReactiveAppBar from './components/app-bar/ResponsiveAppBar';
-import {SelectedMenuItemProvider} from "./components/MenuItemSelected.tsx";
 import AppFooter from "./components/footer/AppFooter.tsx";
+import { 
+    createBrowserRouter, 
+    RouterProvider 
+} from 'react-router-dom';
 
-ReactDOM.createRoot(document.getElementById('root')!).render(
-    <React.StrictMode>
-        <ThemeProvider theme={theme}>
-            <SelectedMenuItemProvider>
-                <CssBaseline />
-                <AppWindow/>
-            </SelectedMenuItemProvider>
-        </ThemeProvider>
-    </React.StrictMode>,
-);
-
-function AppWindow() {
+function AppLayout() {
     const [appBarHeight, setAppBarHeight] = useState(0);
+
     return (
         <Box sx={{
             display: "flex",
@@ -40,3 +33,45 @@ function AppWindow() {
         </Box>
     );
 }
+
+// Create a router with data router capabilities and caching
+const router = createBrowserRouter([
+    {
+        path: "*",
+        element: <AppLayout />,
+        // Enable caching for all routes
+        loader: async ({ request }) => {
+            // This is a simple way to cache responses
+            const url = new URL(request.url);
+            const cachedData = sessionStorage.getItem(url.pathname);
+
+            if (cachedData) {
+                console.log(`Using cached data for ${url.pathname}`);
+                return JSON.parse(cachedData);
+            }
+
+            console.log(`Caching data for ${url.pathname}`);
+            // For this example, we're just returning an empty object
+            // In a real app, you might fetch data here
+            const data = {};
+            sessionStorage.setItem(url.pathname, JSON.stringify(data));
+            return data;
+        }
+    }
+]);
+
+// Add event listener to track navigation
+if (typeof window !== 'undefined') {
+    window.addEventListener('popstate', () => {
+        console.log('Navigation occurred:', window.location.pathname);
+    });
+}
+
+ReactDOM.createRoot(document.getElementById('root')!).render(
+    <React.StrictMode>
+        <ThemeProvider theme={theme}>
+            <CssBaseline />
+            <RouterProvider router={router} />
+        </ThemeProvider>
+    </React.StrictMode>,
+);

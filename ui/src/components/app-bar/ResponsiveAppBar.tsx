@@ -1,4 +1,4 @@
-import React, {useRef, useLayoutEffect} from 'react';
+import React, {useRef, useLayoutEffect, useState, useCallback, memo} from 'react';
 import AppBar from '@mui/material/AppBar';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
@@ -11,14 +11,14 @@ import Typography from '@mui/material/Typography';
 import CodeIcon from '@mui/icons-material/Code';
 import MenuIcon from '@mui/icons-material/Menu';
 import {menuItemsTitles} from "../constants/constants.ts";
-import {useSelectedMenuItem} from "../MenuItemSelected.tsx";
 import ContactDialog from "../ContactDialog.tsx";
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface ResponsiveAppBarProps {
     onHeightMeasured: (height: number) => void;
 }
 
-function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
+function ResponsiveAppBarComponent({ onHeightMeasured }: ResponsiveAppBarProps) {
     const appBarRef = useRef<HTMLDivElement>(null);
     useLayoutEffect(() => {
         if (appBarRef.current) {
@@ -27,27 +27,47 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
         }
     }, [onHeightMeasured]);
 
-    const { selectedOption, setSelectedOption } = useSelectedMenuItem();
-    const [contactDialogOpen, setContactDialogOpen] = React.useState(false);
+    const navigate = useNavigate();
+    const location = useLocation();
+    const [contactDialogOpen, setContactDialogOpen] = useState(false);
+    const [anchorElNav, setAnchorElNav] = useState<null | HTMLElement>(null);
 
-    const [anchorElNav, setAnchorElNav] = React.useState<null | HTMLElement>(null);
-
-    const handleOpenNavMenu = (event: React.MouseEvent<HTMLElement>) => {
+    const handleOpenNavMenu = useCallback((event: React.MouseEvent<HTMLElement>) => {
         setAnchorElNav(event.currentTarget);
-    };
+    }, []);
 
-    const handleCloseNavMenu = () => {
+    const handleCloseNavMenu = useCallback(() => {
         setAnchorElNav(null);
-    };
+    }, []);
 
-    const handleMenuItemClick = (menuItem: string) => {
+    const handleMenuItemClick = useCallback((menuItem: string) => {
         handleCloseNavMenu();
-        setSelectedOption(menuItem);
-    }
+        const path = menuItem === 'Open Source' ? '/open-source' : `/${menuItem.toLowerCase()}`;
+        // Only navigate if we're not already on this path
+        if (location.pathname !== path) {
+            navigate(path);
+        }
+    }, [handleCloseNavMenu, location.pathname, navigate]);
 
-    const handleContactClick = () => {
-        setContactDialogOpen(true)
-    }
+    const handleContactClick = useCallback(() => {
+        setContactDialogOpen(true);
+    }, []);
+
+    const handleLogoClick = useCallback((event: React.MouseEvent<HTMLElement>) => {
+        // Prevent default browser navigation
+        event.preventDefault();
+        // Only navigate if we're not already on the summary page
+        if (location.pathname !== "/summary" && location.pathname !== "/") {
+            navigate("/summary");
+        }
+    }, [location.pathname, navigate]);
+
+    const getSelectedOption = useCallback(() => {
+        const path = location.pathname;
+        if (path === '/open-source') return 'Open Source';
+        if (path === '/') return 'Summary';
+        return path.substring(1).charAt(0).toUpperCase() + path.substring(2);
+    }, [location.pathname]);
 
     return (
         <AppBar position="fixed" ref={appBarRef}>
@@ -57,8 +77,8 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                     <Typography
                         variant="h6"
                         noWrap
-                        href="/"
-                        onClick={() => setSelectedOption("Summary")}
+                        href="/summary"
+                        onClick={handleLogoClick}
                         component="a"
                         sx={{
                             mr: 2,
@@ -111,8 +131,8 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                     <Typography
                         variant="h5"
                         noWrap
-                        href="#summary"
-                        onClick={() => setSelectedOption("Summary")}
+                        href="/summary"
+                        onClick={handleLogoClick}
                         component="a"
                         sx={{
                             mr: 2,
@@ -137,9 +157,9 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                                     sx={{
                                         my: 1,
                                         display: 'block',
-                                        color: selectedOption === page ? 'primary' : 'white',
-                                        textDecoration: selectedOption === page ? 'underline' : 'none',
-                                        fontWeight: selectedOption === page ? 'bold' : 'normal',
+                                        color: getSelectedOption() === page ? 'primary' : 'white',
+                                        textDecoration: getSelectedOption() === page ? 'underline' : 'none',
+                                        fontWeight: getSelectedOption() === page ? 'bold' : 'normal',
                                         whiteSpace: 'nowrap',
                                         padding: '3px 5px',
                                         transition: 'all 0.4s ease-out',
@@ -149,7 +169,7 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
                                             backgroundColor: "inherit",
                                         }
                                     }}
-                                    size={selectedOption === page ? "large" : "small"}
+                                    size={getSelectedOption() === page ? "large" : "small"}
                                 >
                                     {page}
                                 </Button>
@@ -173,4 +193,6 @@ function ResponsiveAppBar({ onHeightMeasured }: ResponsiveAppBarProps) {
         </AppBar>
     );
 }
+// Memoize the component to prevent unnecessary re-renders
+const ResponsiveAppBar = memo(ResponsiveAppBarComponent);
 export default ResponsiveAppBar;
