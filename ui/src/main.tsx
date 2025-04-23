@@ -8,7 +8,7 @@ import App from './App';
 import ReactiveAppBar from './components/app-bar/ResponsiveAppBar';
 import AppFooter from "./components/footer/AppFooter.tsx";
 import { 
-    createBrowserRouter, 
+    createHashRouter, 
     RouterProvider 
 } from 'react-router-dom';
 
@@ -35,37 +35,40 @@ function AppLayout() {
 }
 
 // Create a router with data router capabilities and caching
-const router = createBrowserRouter([
-    {
-        path: "*",
-        element: <AppLayout />,
-        // Enable caching for all routes
-        loader: async ({ request }) => {
-            // This is a simple way to cache responses
-            const url = new URL(request.url);
-            const cachedData = sessionStorage.getItem(url.pathname);
+const router = createHashRouter(
+    [
+        {
+            path: "*",
+            element: <AppLayout />,
+            // Enable caching for all routes
+            loader: async ({ request }) => {
+                // This is a simple way to cache responses
+                const url = new URL(request.url);
+                const pathname = url.hash.replace('#', '') || '/';
+                const cachedData = sessionStorage.getItem(pathname);
 
-            if (cachedData) {
-                console.log(`Using cached data for ${url.pathname}`);
-                return JSON.parse(cachedData);
+                if (cachedData) {
+                    // console.log(`Using cached data for ${pathname}`);
+                    return JSON.parse(cachedData);
+                }
+
+                // console.log(`Caching data for ${pathname}`);
+                // For this example, we're just returning an empty object
+                // In a real app, you might fetch data here
+                const data = {};
+                sessionStorage.setItem(pathname, JSON.stringify(data));
+                return data;
             }
-
-            console.log(`Caching data for ${url.pathname}`);
-            // For this example, we're just returning an empty object
-            // In a real app, you might fetch data here
-            const data = {};
-            sessionStorage.setItem(url.pathname, JSON.stringify(data));
-            return data;
         }
-    }
-]);
+    ]
+);
 
 // Add event listener to track navigation
-if (typeof window !== 'undefined') {
-    window.addEventListener('popstate', () => {
-        console.log('Navigation occurred:', window.location.pathname);
-    });
-}
+// if (typeof window !== 'undefined') {
+//     window.addEventListener('popstate', () => {
+//         console.log('Navigation occurred:', window.location.pathname);
+//     });
+// }
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
     <React.StrictMode>

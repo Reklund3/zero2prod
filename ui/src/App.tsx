@@ -1,6 +1,6 @@
 import { Container } from '@mui/material';
 import React, { lazy, Suspense, useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
+import { Routes, Route, Navigate } from 'react-router-dom';
 import CircularProgress from '@mui/material/CircularProgress';
 import Box from '@mui/material/Box';
 
@@ -40,7 +40,7 @@ const LoadingComponent = () => (
 );
 
 export default function App() {
-    const location = useLocation();
+    // const location = useLocation();
     const [hasPrefetched, setHasPrefetched] = useState(false);
 
     // Prefetch components on initial load
@@ -52,9 +52,9 @@ export default function App() {
     }, [hasPrefetched]);
 
     // Log navigation for debugging
-    useEffect(() => {
-        console.log('Current route:', location.pathname);
-    }, [location]);
+    // useEffect(() => {
+    //     console.log('Current route:', location.pathname);
+    // }, [location]);
 
     return (
         <Container maxWidth="lg">
