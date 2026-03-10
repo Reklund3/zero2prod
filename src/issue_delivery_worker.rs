@@ -5,6 +5,7 @@ use std::time::Duration;
 use tracing::{field::display, Span};
 use uuid::Uuid;
 
+// In the future maybe setup an actual blog for sending out blog notifications.
 pub async fn run_worker_until_stopped(configuration: Settings) -> Result<(), anyhow::Error> {
     let connection_pool = get_pg_pool(&configuration.database);
     let email_client = configuration.email_client.client();
